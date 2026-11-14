@@ -6,7 +6,7 @@ export interface Vec2 {
 }
 
 export type Action = 'idle' | 'walk' | 'quick' | 'power' | 'dash' | 'dodge' | 'super' | 'hitstun' | 'ko';
-export type DodgeDir = 'left' | 'right' | 'back';
+export type DodgeDir = 'left' | 'right' | 'back' | 'forward';
 
 export interface Intent {
   /** World-space move direction, length 0..1 */
@@ -144,7 +144,13 @@ export function stepFighter(f: FighterState, intent: Intent, dt: number): Fighte
       f.invulnT = Math.max(f.invulnT, TUNING.dodgeDur);
       const fw = forward(f.facing);
       const right = { x: -fw.z, z: fw.x };
-      const dir = intent.dodge === 'left' ? { x: -right.x, z: -right.z } : intent.dodge === 'right' ? right : { x: -fw.x, z: -fw.z };
+      const dirs = {
+        left: { x: -right.x, z: -right.z },
+        right,
+        back: { x: -fw.x, z: -fw.z },
+        forward: fw,
+      };
+      const dir = dirs[intent.dodge];
       const speed = TUNING.dodgeDistance / TUNING.dodgeDur;
       f.push = { x: dir.x * speed, z: dir.z * speed };
     } else if (intent.dash && f.cooldowns.dash <= 0) {
