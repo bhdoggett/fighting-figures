@@ -4,7 +4,7 @@ import type { Loadout } from '../game/types';
 import { getPersonality } from '../game/data/personalities';
 import { getCosmetic } from '../game/data/cosmetics';
 import { buildArena } from './arena';
-import { Effects } from './effects';
+import { Effects, SpeechBubble } from './effects';
 import { FighterModel } from './fighterModel';
 
 const HIT_WORDS = ['BONK!', 'POW!', 'BOOP!', 'WHACK!', 'ZONK!', 'BOP!'];
@@ -23,6 +23,7 @@ export class GameRenderer {
   private camLook = new THREE.Vector3();
   private shake = 0;
   private loadouts: [Loadout, Loadout] | null = null;
+  private bubbles: [SpeechBubble, SpeechBubble] = [new SpeechBubble(), new SpeechBubble()];
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -49,6 +50,7 @@ export class GameRenderer {
     this.scene.add(sun);
 
     this.scene.add(buildArena());
+    for (const b of this.bubbles) this.scene.add(b.sprite);
     this.effects = new Effects(this.scene);
   }
 
@@ -104,6 +106,10 @@ export class GameRenderer {
           this.effects.popText('SUPER!', pos, '#ffffff', 1.4);
           break;
         }
+        case 'line': {
+          this.bubbles[e.who].say(e.text);
+          break;
+        }
         case 'respawn': {
           this.effects.ring(new THREE.Vector3(e.at.x, 0, e.at.z), 0x8fd3ff, 3);
           break;
@@ -120,6 +126,12 @@ export class GameRenderer {
     }
     this.handleEvents(m);
     this.effects.update(dt);
+    ([0, 1] as const).forEach((side) => {
+      const f = m.fighters[side];
+      const b = this.bubbles[side];
+      b.sprite.position.set(f.pos.x, 2.9, f.pos.z);
+      b.update(dt);
+    });
 
     // Over-the-shoulder camera behind player 1.
     const p = m.fighters[0].pos;
@@ -154,6 +166,7 @@ export class GameRenderer {
   dispose() {
     if (this.models) for (const m of this.models) m.dispose();
     this.effects.dispose();
+    for (const b of this.bubbles) b.dispose();
     this.renderer.dispose();
   }
 }

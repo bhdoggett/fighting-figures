@@ -41,6 +41,75 @@ function textTexture(text: string, color: string): THREE.CanvasTexture {
   return tex;
 }
 
+function bubbleTexture(text: string): { tex: THREE.CanvasTexture; aspect: number } {
+  const c = document.createElement('canvas');
+  const g = c.getContext('2d')!;
+  const font = '800 44px "Nunito", system-ui, sans-serif';
+  g.font = font;
+  const w = Math.min(900, Math.ceil(g.measureText(text).width) + 60);
+  c.width = w;
+  c.height = 120;
+  g.font = font;
+  g.fillStyle = '#ffffff';
+  g.strokeStyle = '#1d1b2f';
+  g.lineWidth = 8;
+  g.beginPath();
+  g.roundRect(4, 4, w - 8, 86, 16);
+  g.fill();
+  g.stroke();
+  g.beginPath();
+  g.moveTo(w / 2 - 16, 88);
+  g.lineTo(w / 2, 114);
+  g.lineTo(w / 2 + 16, 88);
+  g.closePath();
+  g.fill();
+  g.stroke();
+  g.fillRect(w / 2 - 12, 82, 24, 10);
+  g.fillStyle = '#1d1b2f';
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillText(text, w / 2, 48, w - 40);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return { tex, aspect: w / 120 };
+}
+
+/** Speech bubble that follows a fighter's head. */
+export class SpeechBubble {
+  readonly sprite: THREE.Sprite;
+  life = 0;
+
+  constructor() {
+    this.sprite = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthTest: false }));
+    this.sprite.renderOrder = 11;
+    this.sprite.visible = false;
+    this.sprite.position.y = 2.9;
+  }
+
+  say(text: string, seconds = 2.4) {
+    const { tex, aspect } = bubbleTexture(text);
+    this.sprite.material.map?.dispose();
+    this.sprite.material.map = tex;
+    this.sprite.material.needsUpdate = true;
+    const h = 0.55;
+    this.sprite.scale.set(h * aspect, h, 1);
+    this.life = seconds;
+    this.sprite.visible = true;
+  }
+
+  update(dt: number) {
+    if (this.life <= 0) return;
+    this.life -= dt;
+    this.sprite.material.opacity = Math.min(1, this.life * 4);
+    if (this.life <= 0) this.sprite.visible = false;
+  }
+
+  dispose() {
+    this.sprite.material.map?.dispose();
+    this.sprite.material.dispose();
+  }
+}
+
 export class Effects {
   private group = new THREE.Group();
   private particles: Particle[] = [];

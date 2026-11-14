@@ -1,0 +1,95 @@
+.center {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.sub {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+.cards {
+  display: flex;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card {
+  composes: panel from './shared.module.css';
+  width: 230px;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  transition: transform 120ms ease;
+  animation: deal 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.card:nth-child(2) { animation-delay: 0.08s; }
+.card:nth-child(3) { animation-delay: 0.16s; }
+
+.card:hover {
+  transform: translateY(-8px) rotate(-1deg);
+}
+
+@keyframes deal {
+  from { transform: translateY(40px) scale(0.8); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.special {
+  composes: card;
+  background: var(--color-yellow);
+}
+
+.kind {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: var(--text-sm);
+  opacity: 0.7;
+}
+
+.swatch {
+  width: 96px;
+  height: 96px;
+  border: var(--border);
+  border-radius: 6px;
+  box-shadow: inset -10px -10px 0 rgba(0, 0, 0, 0.2), inset 10px 10px 0 rgba(255, 255, 255, 0.3);
+  background: #ccc;
+}
+
+.swatch[data-key='wood'] { background: #a0703c; }
+.swatch[data-key='stone'] { background: #9a9a9a; }
+.swatch[data-key='iron'] { background: #d8d8e0; }
+.swatch[data-key='gold'] { background: #ffc93c; }
+.swatch[data-key='diamond'] { background: #5ce1e6; }
+.swatch[data-key='skin'] { background: linear-gradient(135deg, #3a86ff, #ff4d6d); }
+.swatch[data-key='hat'] { background: linear-gradient(#e63946 50%, #f2c79b 50%); }
+.swatch[data-key='cape'] { background: linear-gradient(90deg, #7b2cbf, #e63946); }
+.swatch[data-key='trophy'] { background: #ffc93c; border-radius: 50% 50% 8px 8px; }
+.swatch[data-kind='personality'] { background: var(--color-purple); }
+.swatch[data-key='robot'] { background: #00b4d8; }
+.swatch[data-key='wizard'] { background: #3a0ca3; }
+
+.label {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  text-align: center;
+  line-height: 1.1;
+}
+
+.detail {
+  font-weight: 800;
+  text-align: center;
+  opacity: 0.8;
+}
