@@ -37,8 +37,8 @@ If you don't touch the mouse for a moment, the camera turns toward your opponent
 | Ninja | 5 | 2 | 3 | 25 s charge, 40% damage |
 | Tank | 1 | 3 | 6 | 90 s charge, instant KO |
 | Trickster | 4 | 3 | 3 | 40 s charge, 60% damage |
-| Robo-Bonk (unlock at Stone) | 2 | 4 | 4 | 50 s charge, 75% damage |
-| Grumpy Wizard (unlock at Iron) | 2 | 5 | 3 | 70 s charge, instant KO |
+| Robo-Bonk (rank-up prize) | 2 | 4 | 4 | 50 s charge, 75% damage |
+| Grumpy Wizard (rank-up prize) | 2 | 5 | 3 | 70 s charge, instant KO |
 
 ## Saving
 
