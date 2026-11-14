@@ -11,6 +11,8 @@ export interface Profile {
   trophies: number;
   battles: number;
   wins: number;
+  /** Levels whose prize hasn't been picked yet (survives closing the tab). */
+  pendingPrizes: number[];
   owned: { weapons: string[]; cosmetics: string[]; personalities: PersonalityId[] };
   loadout: Loadout;
 }
@@ -39,6 +41,7 @@ export function newProfile(): Profile {
     trophies: 0,
     battles: 0,
     wins: 0,
+    pendingPrizes: [],
     owned: {
       weapons: ['sword-wood'],
       cosmetics: ['skin-blue'],
@@ -150,9 +153,16 @@ export function claimPrize(p: Profile, prize: Prize): Profile {
   } else if (prize.kind === 'trophy') {
     trophies += 1;
   }
-  return { ...p, owned, trophies, loadout };
+  return { ...p, owned, trophies, loadout, pendingPrizes: p.pendingPrizes.slice(1) };
 }
 
 export function recordBattle(p: Profile, r: BattleResult): Profile {
   return { ...p, battles: p.battles + 1, wins: p.wins + (r.won ? 1 : 0) };
+}
+
+/** Record a finished battle: stats, XP, levels, and a prize owed for each level gained. */
+export function finishBattle(p: Profile, r: BattleResult): { profile: Profile; levelsGained: number[]; xp: number } {
+  const xp = xpForBattle(r);
+  const { profile, levelsGained } = applyXp(recordBattle(p, r), xp);
+  return { profile: { ...profile, pendingPrizes: [...profile.pendingPrizes, ...levelsGained] }, levelsGained, xp };
 }

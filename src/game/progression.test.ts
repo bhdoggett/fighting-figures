@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyXp, newProfile, offerPrizes, xpForBattle, xpToNext } from './progression';
+import { applyXp, claimPrize, finishBattle, newProfile, offerPrizes, xpForBattle, xpToNext } from './progression';
 import { MAX_LEVEL } from './data/ranks';
 import { WEAPONS } from './data/weapons';
 import { COSMETICS } from './data/cosmetics';
@@ -95,5 +95,23 @@ describe('offerPrizes', () => {
         if (prize.kind === 'weapon') expect(prize.id).toMatch(/-wood$|-stone$/);
       }
     }
+  });
+});
+
+describe('pending prizes', () => {
+  it('finishBattle queues one prize per level gained and saves stats', () => {
+    const p = { ...newProfile(), xp: 95 };
+    const { profile, levelsGained, xp } = finishBattle(p, { won: true, draw: false, kos: 30, supersLanded: 0 });
+    expect(xp).toBe(40 + 60 + 150);
+    expect(levelsGained).toEqual([2, 3]);
+    expect(profile.pendingPrizes).toEqual([2, 3]);
+    expect(profile.battles).toBe(1);
+    expect(profile.wins).toBe(1);
+  });
+  it('claiming a prize removes the first pending level', () => {
+    const p = { ...newProfile(), pendingPrizes: [2, 3] };
+    const prize = offerPrizes(p, 2, Math.random)[0];
+    const next = claimPrize(p, prize);
+    expect(next.pendingPrizes).toEqual([3]);
   });
 });

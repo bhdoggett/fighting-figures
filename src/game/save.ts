@@ -27,6 +27,9 @@ export function parseProfile(raw: unknown): Profile | null {
     trophies: typeof r.trophies === 'number' ? r.trophies : 0,
     battles: typeof r.battles === 'number' ? r.battles : 0,
     wins: typeof r.wins === 'number' ? r.wins : 0,
+    pendingPrizes: Array.isArray(r.pendingPrizes)
+      ? r.pendingPrizes.filter((n): n is number => typeof n === 'number' && n >= 2 && n <= 30).slice(0, 30)
+      : [],
     owned: {
       weapons: owned.weapons.length ? owned.weapons : base.owned.weapons,
       cosmetics: owned.cosmetics.length ? owned.cosmetics : base.owned.cosmetics,

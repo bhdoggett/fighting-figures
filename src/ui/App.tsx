@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Loadout } from '../game/types';
-import { applyXp, claimPrize, offerPrizes, recordBattle, xpForBattle, type BattleResult, type Prize, type Profile } from '../game/progression';
+import { claimPrize, finishBattle, offerPrizes, type BattleResult, type Prize, type Profile } from '../game/progression';
 import { loadProfile, saveProfile } from '../game/save';
 import { botLoadoutForLevel, difficultyForLevel } from '../game/ai';
 import { winnerOf, type MatchState } from '../game/match';
@@ -12,8 +12,14 @@ import { PrizePopup } from './PrizePopup';
 type Screen =
   | { kind: 'pick' }
   | { kind: 'fight'; bot: Loadout; difficulty: number; key: number }
-  | { kind: 'results'; info: ResultsInfo; levelsGained: number[] }
-  | { kind: 'prize'; levels: number[]; index: number; offers: Prize[] };
+  | { kind: 'results'; info: ResultsInfo }
+  | { kind: 'prize'; level: number; offers: Prize[] };
+
+function prizeScreenFor(p: Profile): Screen {
+  const level = p.pendingPrizes[0];
+  if (level === undefined) return { kind: 'pick' };
+  return { kind: 'prize', level, offers: offerPrizes(p, level, Math.random) };
+}
 
 function matchDuration(): number {
   const dur = Number(new URLSearchParams(window.location.search).get('dur'));
@@ -22,7 +28,8 @@ function matchDuration(): number {
 
 export function App() {
   const [profile, setProfile] = useState<Profile>(() => loadProfile(window.localStorage));
-  const [screen, setScreen] = useState<Screen>({ kind: 'pick' });
+  // Unclaimed prizes from a closed tab are offered first thing.
+  const [screen, setScreen] = useState<Screen>(() => prizeScreenFor(profile));
 
   useEffect(() => {
     saveProfile(window.localStorage, profile);
@@ -42,13 +49,11 @@ export function App() {
         kos: m.kos[0],
         supersLanded: m.supersLanded[0],
       };
-      const xp = xpForBattle(result);
       const before = profile;
-      const { profile: leveled, levelsGained } = applyXp(recordBattle(profile, result), xp);
+      const { profile: leveled, xp } = finishBattle(profile, result);
       setProfile(leveled);
       setScreen({
         kind: 'results',
-        levelsGained,
         info: {
           result,
           xp,
@@ -64,30 +69,15 @@ export function App() {
     [profile],
   );
 
-  const afterResults = useCallback(
-    (levelsGained: number[]) => {
-      if (levelsGained.length === 0) {
-        setScreen({ kind: 'pick' });
-        return;
-      }
-      setScreen({ kind: 'prize', levels: levelsGained, index: 0, offers: offerPrizes(profile, levelsGained[0], Math.random) });
-    },
-    [profile],
-  );
+  const afterResults = useCallback(() => setScreen(prizeScreenFor(profile)), [profile]);
 
   const pickPrize = useCallback(
     (prize: Prize) => {
-      if (screen.kind !== 'prize') return;
       const next = claimPrize(profile, prize);
       setProfile(next);
-      const index = screen.index + 1;
-      if (index >= screen.levels.length) {
-        setScreen({ kind: 'pick' });
-      } else {
-        setScreen({ ...screen, index, offers: offerPrizes(next, screen.levels[index], Math.random) });
-      }
+      setScreen(prizeScreenFor(next));
     },
-    [profile, screen],
+    [profile],
   );
 
   switch (screen.kind) {
@@ -106,8 +96,8 @@ export function App() {
         />
       );
     case 'results':
-      return <ResultsScreen info={screen.info} onContinue={() => afterResults(screen.levelsGained)} />;
+      return <ResultsScreen info={screen.info} onContinue={afterResults} />;
     case 'prize':
-      return <PrizePopup level={screen.levels[screen.index]} offers={screen.offers} onPick={pickPrize} />;
+      return <PrizePopup level={screen.level} offers={screen.offers} onPick={pickPrize} />;
   }
 }

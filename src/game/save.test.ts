@@ -47,4 +47,18 @@ describe('save', () => {
     expect(importProfile('hello there')).toBeNull();
     expect(importProfile('')).toBeNull();
   });
+  it('keeps unclaimed prizes across reloads', () => {
+    const s = new MemStorage();
+    saveProfile(s, { ...newProfile(), level: 3, pendingPrizes: [2, 3] });
+    expect(loadProfile(s).pendingPrizes).toEqual([2, 3]);
+  });
+  it('older saves without pending prizes load with none', () => {
+    const s = new MemStorage();
+    const { pendingPrizes: _drop, ...old } = newProfile();
+    void _drop;
+    s.setItem(SAVE_KEY, JSON.stringify({ ...old, level: 4 }));
+    const p = loadProfile(s);
+    expect(p.level).toBe(4);
+    expect(p.pendingPrizes).toEqual([]);
+  });
 });
