@@ -3,11 +3,10 @@
   grid-template-columns: minmax(280px, 1fr) minmax(340px, 1.2fr) minmax(240px, 0.9fr);
   grid-template-areas:
     'header header header'
-    'preview options controls'
-    'footer footer footer'
+    'preview options side'
     'save save save';
   gap: var(--space-4);
-  padding: var(--space-5);
+  padding: var(--space-4) var(--space-5);
   max-width: 1280px;
   margin: 0 auto;
 }
@@ -80,7 +79,7 @@
 
 .preview {
   width: 100%;
-  height: 340px;
+  height: 300px;
   display: block;
 }
 
@@ -195,8 +194,27 @@
   font-size: 15px;
 }
 
+.side {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.fight {
+  width: 100%;
+  animation: wiggle 1.6s ease-in-out infinite;
+}
+
+@keyframes wiggle {
+  0%, 80%, 100% { transform: rotate(0deg); }
+  85% { transform: rotate(-3deg) scale(1.03); }
+  90% { transform: rotate(3deg) scale(1.03); }
+  95% { transform: rotate(-2deg); }
+}
+
 .controls {
-  grid-area: controls;
+  flex: 1;
 }
 
 .h2 {
@@ -232,14 +250,6 @@
   font-size: var(--text-md);
   margin: var(--space-3) 0 0;
   color: var(--color-red);
-}
-
-.footer {
-  grid-area: footer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
 }
 
 .saveButtons {
@@ -284,8 +294,7 @@
     grid-template-areas:
       'header header'
       'preview options'
-      'controls controls'
-      'footer footer'
+      'side side'
       'save save';
   }
 }

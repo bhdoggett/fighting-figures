@@ -1,0 +1,9 @@
+.icon {
+  width: 112px;
+  height: 112px;
+  image-rendering: pixelated;
+  background: #fff;
+  border: var(--border);
+  border-radius: 6px;
+  padding: 6px;
+}

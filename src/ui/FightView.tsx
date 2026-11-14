@@ -53,7 +53,8 @@ export function FightView({ player, bot, difficulty, duration, onDone, onQuit }:
     inputRef.current = input;
     const match = createMatch(player, bot, duration);
     const brain = createBotBrain();
-    input.cameraYaw = 0;
+    // Start looking at the opponent.
+    input.cameraYaw = Math.atan2(match.fighters[1].pos.x - match.fighters[0].pos.x, match.fighters[1].pos.z - match.fighters[0].pos.z);
 
     const resize = () => renderer.setSize(wrap.clientWidth, wrap.clientHeight);
     resize();
@@ -105,7 +106,10 @@ export function FightView({ player, bot, difficulty, duration, onDone, onQuit }:
         openingTaunts(match);
         tauntsSaid = true;
       }
-      if (fighting && !match.over) runFrame(match, getIntents, dt);
+      if (fighting && !match.over) {
+        input.autoFollow(match.fighters[0], match.fighters[1], dt);
+        runFrame(match, getIntents, dt);
+      }
       if (match.over) {
         endTimer += dt;
         if (endTimer >= END_HOLD_SEC && !done) {

@@ -392,9 +392,12 @@ export class FighterModel {
         break;
       }
       case 'dodge': {
-        this.body.position.y = Math.sin(p * Math.PI) * 0.3;
-        this.body.rotation.x = p * Math.PI * 2;
-        this.body.scale.set(1, 0.7, 1);
+        // A quick hop-and-twirl reads clearly as "dodged!" from any angle.
+        this.body.position.y = Math.sin(p * Math.PI) * 0.45;
+        this.body.rotation.y = ease(p) * Math.PI * 2;
+        this.body.scale.set(1.05, 0.8 + 0.2 * Math.abs(Math.cos(p * Math.PI)), 1.05);
+        this.armL.rotation.z = -1.3;
+        this.armR.rotation.z = 1.3;
         break;
       }
       case 'hitstun': {

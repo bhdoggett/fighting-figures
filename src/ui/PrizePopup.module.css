@@ -59,28 +59,6 @@
   opacity: 0.7;
 }
 
-.swatch {
-  width: 96px;
-  height: 96px;
-  border: var(--border);
-  border-radius: 6px;
-  box-shadow: inset -10px -10px 0 rgba(0, 0, 0, 0.2), inset 10px 10px 0 rgba(255, 255, 255, 0.3);
-  background: #ccc;
-}
-
-.swatch[data-key='wood'] { background: #a0703c; }
-.swatch[data-key='stone'] { background: #9a9a9a; }
-.swatch[data-key='iron'] { background: #d8d8e0; }
-.swatch[data-key='gold'] { background: #ffc93c; }
-.swatch[data-key='diamond'] { background: #5ce1e6; }
-.swatch[data-key='skin'] { background: linear-gradient(135deg, #3a86ff, #ff4d6d); }
-.swatch[data-key='hat'] { background: linear-gradient(#e63946 50%, #f2c79b 50%); }
-.swatch[data-key='cape'] { background: linear-gradient(90deg, #7b2cbf, #e63946); }
-.swatch[data-key='trophy'] { background: #ffc93c; border-radius: 50% 50% 8px 8px; }
-.swatch[data-kind='personality'] { background: var(--color-purple); }
-.swatch[data-key='robot'] { background: #00b4d8; }
-.swatch[data-key='wizard'] { background: #3a0ca3; }
-
 .label {
   font-family: var(--font-display);
   font-size: var(--text-lg);

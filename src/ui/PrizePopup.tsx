@@ -1,9 +1,6 @@
 import type { Prize } from '../game/progression';
 import { isRankUpLevel, rankForLevel } from '../game/data/ranks';
-import { getCosmetic } from '../game/data/cosmetics';
-import { getWeapon } from '../game/data/weapons';
-import { getPersonality } from '../game/data/personalities';
-import type { PersonalityId } from '../game/types';
+import { PrizeIcon } from './PrizeIcon';
 import shared from './shared.module.css';
 import styles from './PrizePopup.module.css';
 
@@ -13,13 +10,6 @@ const KIND_LABEL: Record<Prize['kind'], string> = {
   personality: 'NEW FIGHTER',
   trophy: 'Trophy',
 };
-
-function swatchKey(prize: Prize): string {
-  if (prize.kind === 'weapon') return getWeapon(prize.id).tier;
-  if (prize.kind === 'cosmetic') return getCosmetic(prize.id)?.slot ?? 'skin';
-  if (prize.kind === 'personality') return getPersonality(prize.id as PersonalityId).id;
-  return 'trophy';
-}
 
 export function PrizePopup({ level, offers, onPick }: { level: number; offers: Prize[]; onPick: (p: Prize) => void }) {
   const rankUp = isRankUpLevel(level);
@@ -35,7 +25,7 @@ export function PrizePopup({ level, offers, onPick }: { level: number; offers: P
           {offers.map((prize) => (
             <button key={prize.id} className={prize.kind === 'personality' ? styles.special : styles.card} onClick={() => onPick(prize)}>
               <span className={styles.kind}>{KIND_LABEL[prize.kind]}</span>
-              <span className={styles.swatch} data-kind={prize.kind} data-key={swatchKey(prize)} />
+              <PrizeIcon prize={prize} />
               <span className={styles.label}>{prize.label}</span>
               <span className={styles.detail}>{prize.detail}</span>
             </button>

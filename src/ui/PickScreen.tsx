@@ -185,6 +185,10 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
           />
         </section>
 
+        <div className={styles.side}>
+        <button className={`${shared.big} ${styles.fight}`} onClick={onFight}>
+          FIGHT!
+        </button>
         <section className={`${shared.panel} ${styles.controls}`}>
           <h2 className={styles.h2}>Controls</h2>
           <ul className={styles.keys}>
@@ -200,7 +204,6 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
           <p className={styles.goal}>Most KOs in 5 minutes wins!</p>
         </section>
 
-        <footer className={styles.footer}>
           <div className={styles.saveButtons}>
             <button className={shared.small} onClick={() => { setSaveMode(saveMode === 'export' ? 'none' : 'export'); setSaveMsg(''); }}>
               Save code
@@ -210,10 +213,7 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
             </button>
             {saveMsg && <span className={styles.saveMsg}>{saveMsg}</span>}
           </div>
-          <button className={shared.big} onClick={onFight}>
-            FIGHT!
-          </button>
-        </footer>
+        </div>
 
         {saveMode !== 'none' && (
           <section className={`${shared.panel} ${styles.saveBox}`}>

@@ -29,7 +29,7 @@ export class GameRenderer {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     this.scene.background = new THREE.Color(0x8fd3ff);
@@ -139,8 +139,8 @@ export class GameRenderer {
     const right = new THREE.Vector3(-Math.cos(yaw), 0, Math.sin(yaw));
     const height = 1.6 + pitch * 5;
     const dist = CAMERA_DISTANCE * (1 + pitch * 0.3);
-    const desired = new THREE.Vector3(p.x, 0, p.z).addScaledVector(fw, -dist).addScaledVector(right, 0.9).setY(height + 0.6);
-    const look = new THREE.Vector3(p.x, 1.4, p.z).addScaledVector(fw, 4).addScaledVector(right, 0.6);
+    const desired = new THREE.Vector3(p.x, 0, p.z).addScaledVector(fw, -dist).addScaledVector(right, 1.4).setY(height + 0.9);
+    const look = new THREE.Vector3(p.x, 1.4, p.z).addScaledVector(fw, 4).addScaledVector(right, 1.0);
     const k = 1 - Math.exp(-dt * 12);
     this.camPos.lerp(desired, k);
     this.camLook.lerp(look, k);

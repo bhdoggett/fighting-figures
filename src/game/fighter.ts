@@ -134,7 +134,8 @@ export function stepFighter(f: FighterState, intent: Intent, dt: number): Fighte
   // Start new actions only when free.
   if (!isBusy(f)) {
     if (intent.facing !== null) f.facing = intent.facing;
-    const swing = f.weapon.swingTimeMul;
+    // Faster fighters also swing faster: speed 5 = 0.9x, speed 1 = 1.1x.
+    const swing = f.weapon.swingTimeMul * (1.15 - 0.05 * f.personality.speed);
     if (intent.super && f.superCharge >= 1) {
       f.superCharge = 0;
       startAction(f, 'super', TUNING.superDur);
@@ -164,8 +165,9 @@ export function stepFighter(f: FighterState, intent: Intent, dt: number): Fighte
       f.cooldowns.power = TUNING.powerCooldown;
       const fw = forward(f.facing);
       if (f.personality.powerMove === 'teleportSlash') {
-        f.pos.x += fw.x * 2.5;
-        f.pos.z += fw.z * 2.5;
+        // A super-fast zip forward; body collision stops it at the target.
+        const speed = 3.5 / (TUNING.powerDur * swing * 0.4);
+        f.push = { x: fw.x * speed, z: fw.z * speed };
       } else if (f.personality.powerMove === 'firePunch') {
         const speed = 2.5 / (TUNING.powerDur * swing * 0.4);
         f.push = { x: fw.x * speed, z: fw.z * speed };
