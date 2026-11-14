@@ -30,6 +30,10 @@ if (process.env.FRESH) {
   await page.evaluate(() => localStorage.clear());
   await page.reload();
 }
+if (process.env.SEED_SAVE) {
+  await page.evaluate((s) => localStorage.setItem('fighting-figures.save', s), process.env.SEED_SAVE);
+  await page.reload();
+}
 await sleep(1500);
 await shot(page, '01-pick');
 
