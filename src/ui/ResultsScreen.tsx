@@ -1,5 +1,5 @@
 import type { BattleResult } from '../game/progression';
-import { xpToNext } from '../game/progression';
+import { XP, xpToNext } from '../game/progression';
 import { MAX_LEVEL } from '../game/data/ranks';
 import { RankBadge } from './RankBadge';
 import shared from './shared.module.css';
@@ -41,11 +41,11 @@ export function ResultsScreen({ info, onContinue }: { info: ResultsInfo; onConti
             </div>
           </div>
           <ul className={styles.xpList}>
-            <li>Battle bonus <b>+40</b></li>
-            {result.won && <li>Winner bonus <b>+60</b></li>}
-            {result.draw && <li>Draw bonus <b>+25</b></li>}
-            {result.kos > 0 && <li>{result.kos} KO{result.kos > 1 ? 's' : ''} <b>+{result.kos * 15}</b></li>}
-            {result.supersLanded > 0 && <li>Supers landed <b>+{result.supersLanded * 10}</b></li>}
+            <li>Battle bonus <b>+{XP.battle}</b></li>
+            {result.won && <li>Winner bonus <b>+{XP.win}</b></li>}
+            {result.draw && <li>Draw bonus <b>+{XP.draw}</b></li>}
+            {result.kos > 0 && <li>{result.kos} KO{result.kos > 1 ? 's' : ''} <b>+{result.kos * XP.perKo}</b></li>}
+            {result.supersLanded > 0 && <li>Supers landed <b>+{result.supersLanded * XP.perSuper}</b></li>}
             <li className={styles.total}>Total <b>+{info.xp} XP</b></li>
           </ul>
           <div className={styles.levelRow}>

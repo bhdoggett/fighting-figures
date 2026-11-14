@@ -34,11 +34,14 @@ export interface FighterState {
   hitsLanded: number;
   /** World-space velocity applied during dash / dodge / knockback */
   push: Vec2;
-  cooldowns: { power: number; dash: number; dodge: number };
+  cooldowns: { power: number; dash: number; dodge: number; quick: number };
   superCharge: number;
   ducking: boolean;
   invulnT: number;
   koTimer: number;
+  /** Consecutive hits taken without a break; the third bounces you free. */
+  comboHits: number;
+  comboT: number;
   moveSpeed: number;
   personality: Personality;
   weapon: Weapon;
@@ -68,6 +71,13 @@ export const TUNING = {
   dodgeCooldown: 0.8,
   superDur: 1.0,
   hitstunDur: 0.35,
+  /** Quick hits only make you flinch briefly, so mashing can't lock someone down. */
+  quickStunDur: 0.15,
+  quickRecovery: 0.2,
+  comboWindow: 1.2,
+  comboBreakHits: 3,
+  comboBreakInvuln: 0.7,
+  comboBreakKnockback: 11,
   knockback: 5,
   respawnInvuln: 1.5,
   duckSpeedMul: 0.35,
@@ -90,11 +100,13 @@ export function createFighter(id: 'p1' | 'p2', personality: Personality, weapon:
     actionDur: 0,
     hitsLanded: 0,
     push: { x: 0, z: 0 },
-    cooldowns: { power: 0, dash: 0, dodge: 0 },
+    cooldowns: { power: 0, dash: 0, dodge: 0, quick: 0 },
     superCharge: 0,
     ducking: false,
     invulnT: TUNING.respawnInvuln,
     koTimer: 0,
+    comboHits: 0,
+    comboT: 0,
     moveSpeed: 3 + 0.6 * personality.speed,
     personality,
     weapon,
@@ -122,7 +134,10 @@ export function stepFighter(f: FighterState, intent: Intent, dt: number): Fighte
   f.cooldowns.power = Math.max(0, f.cooldowns.power - dt);
   f.cooldowns.dash = Math.max(0, f.cooldowns.dash - dt);
   f.cooldowns.dodge = Math.max(0, f.cooldowns.dodge - dt);
+  f.cooldowns.quick = Math.max(0, f.cooldowns.quick - dt);
   f.invulnT = Math.max(0, f.invulnT - dt);
+  f.comboT = Math.max(0, f.comboT - dt);
+  if (f.comboT <= 0) f.comboHits = 0;
 
   if (f.action === 'ko') {
     f.koTimer = Math.max(0, f.koTimer - dt);
@@ -172,8 +187,10 @@ export function stepFighter(f: FighterState, intent: Intent, dt: number): Fighte
         const speed = 2.5 / (TUNING.powerDur * swing * 0.4);
         f.push = { x: fw.x * speed, z: fw.z * speed };
       }
-    } else if (intent.quick) {
+    } else if (intent.quick && f.cooldowns.quick <= 0) {
       startAction(f, 'quick', TUNING.quickDur * swing);
+      // Short breather after each quick hit so mashing has a rhythm, not a stun-lock.
+      f.cooldowns.quick = TUNING.quickDur * swing + TUNING.quickRecovery;
     }
   }
 
@@ -325,12 +342,28 @@ function applyHit(h: PendingHit): HitEvent | null {
     b.action = 'ko';
     b.actionT = 0;
     b.push = { x: 0, z: 0 };
-  } else if (b.action !== 'super') {
-    // Supers can't be interrupted, so a charged super is never wasted by a poke.
+  } else {
     const nx = h.dist > 0.01 ? h.dx / h.dist : 0;
     const nz = h.dist > 0.01 ? h.dz / h.dist : 1;
-    startAction(b, 'hitstun', TUNING.hitstunDur);
-    b.push = { x: nx * TUNING.knockback, z: nz * TUNING.knockback };
+    b.comboHits += 1;
+    b.comboT = TUNING.comboWindow;
+    const attacking = b.action === 'quick' || b.action === 'power' || b.action === 'dash';
+    if (b.comboHits >= TUNING.comboBreakHits) {
+      // Combo breaker: bounce free and get a moment of safety.
+      b.comboHits = 0;
+      startAction(b, 'hitstun', TUNING.quickStunDur);
+      b.push = { x: nx * TUNING.comboBreakKnockback, z: nz * TUNING.comboBreakKnockback };
+      b.invulnT = Math.max(b.invulnT, TUNING.comboBreakInvuln);
+    } else if (b.action === 'super') {
+      // Supers can't be interrupted, so a charged super is never wasted by a poke.
+    } else if (h.kind === 'quick' && attacking) {
+      // Quick hits don't cancel an attack that's already swinging.
+    } else {
+      const stun = h.kind === 'quick' ? TUNING.quickStunDur : TUNING.hitstunDur;
+      startAction(b, 'hitstun', stun);
+      const kb = h.kind === 'quick' ? TUNING.knockback * 0.6 : TUNING.knockback;
+      b.push = { x: nx * kb, z: nz * kb };
+    }
   }
   return { attacker: a.id, target: b.id, damage, kind: h.kind, ko, at: { x: b.pos.x, z: b.pos.z } };
 }

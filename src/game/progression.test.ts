@@ -15,8 +15,23 @@ describe('xpForBattle', () => {
     expect(xpForBattle({ won: false, draw: false, kos: 0, supersLanded: 0 })).toBe(40);
   });
   it('adds bonuses', () => {
-    expect(xpForBattle({ won: true, draw: false, kos: 3, supersLanded: 1 })).toBe(40 + 60 + 45 + 10);
-    expect(xpForBattle({ won: false, draw: true, kos: 1, supersLanded: 0 })).toBe(40 + 25 + 15);
+    expect(xpForBattle({ won: true, draw: false, kos: 3, supersLanded: 1 })).toBe(40 + 60 + 15 + 10);
+    expect(xpForBattle({ won: false, draw: true, kos: 1, supersLanded: 0 })).toBe(40 + 25 + 5);
+  });
+});
+
+describe('pacing', () => {
+  it('reaching Obsidian (level 25) takes about 100+ typical battles', () => {
+    let total = 0;
+    for (let l = 1; l < 25; l++) total += xpToNext(l);
+    // A typical battle: ~15 KOs, wins a bit over half the time.
+    const typical = 40 + 0.6 * 60 + 15 * 5 + 10;
+    expect(total / typical).toBeGreaterThanOrEqual(100);
+    expect(total / typical).toBeLessThanOrEqual(140);
+  });
+  it('first level-up comes after one battle', () => {
+    expect(xpForBattle({ won: false, draw: false, kos: 2, supersLanded: 0 })).toBeGreaterThanOrEqual(xpToNext(1) - 50);
+    expect(xpForBattle({ won: true, draw: false, kos: 0, supersLanded: 0 })).toBeGreaterThanOrEqual(xpToNext(1));
   });
 });
 

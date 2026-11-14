@@ -10,11 +10,12 @@ export interface BotBrain {
   strafe: number;
   lastFoeAction: string;
   reactIn: number;
+  wasStunned: boolean;
   plan: 'approach' | 'attack' | 'back' | 'circle';
 }
 
 export function createBotBrain(): BotBrain {
-  return { think: 0.5, strafe: 1, lastFoeAction: 'idle', reactIn: -1, plan: 'approach' };
+  return { think: 0.5, strafe: 1, lastFoeAction: 'idle', reactIn: -1, wasStunned: false, plan: 'approach' };
 }
 
 export function difficultyForLevel(level: number): number {
@@ -47,6 +48,19 @@ export function botIntent(brain: BotBrain, self: FighterState, foe: FighterState
       return it;
     }
   }
+
+  // Fight back right after getting bonked: dodge out or swing back.
+  const stunned = self.action === 'hitstun';
+  if (brain.wasStunned && !stunned) {
+    brain.wasStunned = false;
+    if (rng() < 0.25 + 0.6 * difficulty) {
+      if (rng() < 0.45) it.dodge = 'back';
+      else if (self.cooldowns.power <= 0 && rng() < 0.4) it.power = true;
+      else it.quick = true;
+      return it;
+    }
+  }
+  brain.wasStunned = stunned;
 
   if (foe.action === 'ko') {
     // Victory lap: wander back to the middle.

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createMatch, stepMatch, FIXED_DT } from './match';
 import { botIntent, createBotBrain, difficultyForLevel } from './ai';
+import { emptyIntent, type Intent } from './fighter';
 import type { Loadout, PersonalityId } from './types';
 
 function mulberry(seed: number) {
@@ -55,5 +56,30 @@ describe('balance', () => {
     }
     const vals = Object.values(score);
     expect(Math.max(...vals) - Math.min(...vals)).toBeLessThan(40);
+  });
+
+  it('mashing quick attack does not beat a level-15 bot', () => {
+    let masherKos = 0;
+    let botKos = 0;
+    for (const per of ['hothead', 'tank', 'ninja', 'trickster'] as PersonalityId[]) {
+      const rng = mulberry(7);
+      const l1: Loadout = { personality: per, weapon: 'sword-wood', skin: 'skin-blue' };
+      const l2: Loadout = { personality: 'trickster', weapon: 'sword-gold', skin: 'skin-red' };
+      const m = createMatch(l1, l2, 180, rng);
+      const brain = createBotBrain();
+      let tick = 0;
+      while (!m.over) {
+        const [f1, f2] = m.fighters;
+        const dx = f2.pos.x - f1.pos.x;
+        const dz = f2.pos.z - f1.pos.z;
+        const len = Math.hypot(dx, dz) || 1;
+        const masher: Intent = { ...emptyIntent(), move: { x: dx / len, z: dz / len }, facing: Math.atan2(dx, dz), quick: tick % 12 === 0 };
+        stepMatch(m, [masher, botIntent(brain, f2, f1, difficultyForLevel(15), rng, FIXED_DT)], FIXED_DT);
+        tick++;
+      }
+      masherKos += m.kos[0];
+      botKos += m.kos[1];
+    }
+    expect(masherKos).toBeLessThanOrEqual(botKos * 1.2);
   });
 });
