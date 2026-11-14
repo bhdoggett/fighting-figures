@@ -68,6 +68,7 @@ const EDGE_ACTIONS = new Set<KeyAction>(['dodge-left', 'dodge-right', 'dodge-for
 const AUTO_AIM_RANGE = 6;
 const MOUSE_SENSITIVITY = 0.0028;
 const AUTO_FOLLOW_DELAY_MS = 1200;
+const INPUT_BUFFER_MS = 250;
 const AUTO_FOLLOW_SPEED = 2.6;
 
 export class InputController {
@@ -75,7 +76,7 @@ export class InputController {
   cameraPitch = 0.25;
   private held = new Set<KeyAction>();
   /** Edge-triggered presses waiting to be consumed by the next simulation step. */
-  private pending = new Set<KeyAction | 'dash'>();
+  private pending = new Map<KeyAction | 'dash', number>();
   private target: HTMLElement;
   private dragging = false;
   enabled = true;
@@ -113,12 +114,12 @@ export class InputController {
     if (!action) return;
     e.preventDefault();
     if (EDGE_ACTIONS.has(action)) {
-      if (!e.repeat) this.pending.add(action);
+      if (!e.repeat) this.pending.set(action, performance.now());
     } else {
       this.held.add(action);
     }
-    // Shift+WASD should not also keep walking in that direction.
-    if (e.shiftKey && MOVE_KEYS[e.code]) this.held.delete(MOVE_KEYS[e.code]);
+    // A fresh Shift+WASD press dodges instead of walking; a held W keeps walking.
+    if (e.shiftKey && !e.repeat && MOVE_KEYS[e.code]) this.held.delete(MOVE_KEYS[e.code]);
   };
 
   private onKeyUp = (e: KeyboardEvent) => {
@@ -137,7 +138,7 @@ export class InputController {
   private onMouseDown = (e: MouseEvent) => {
     if (!this.enabled) return;
     if (e.button === 2) {
-      this.pending.add('quick');
+      this.pending.set('quick', performance.now());
       return;
     }
     if (e.button !== 0) return;
@@ -147,7 +148,7 @@ export class InputController {
       this.dragging = true;
       return;
     }
-    this.pending.add('dash');
+    this.pending.set('dash', performance.now());
   };
 
   private onMouseUp = () => {
@@ -168,6 +169,8 @@ export class InputController {
   intent(self: FighterState, foe: FighterState): Intent {
     const it = emptyIntent();
     if (!this.enabled) return it;
+    const now = performance.now();
+    for (const [k, t] of this.pending) if (now - t > INPUT_BUFFER_MS) this.pending.delete(k);
     it.move = moveFromKeys(this.held, this.cameraYaw);
     it.duck = this.held.has('duck');
     it.quick = this.pending.has('quick');
@@ -187,7 +190,8 @@ export class InputController {
     } else {
       it.facing = this.cameraYaw;
     }
-    this.pending.clear();
+    // While busy (mid-swing, stunned), keep presses so they fire as soon as you're free.
+    if (self.action === 'idle' || self.action === 'walk') this.pending.clear();
     return it;
   }
 
