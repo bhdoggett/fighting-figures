@@ -4,6 +4,7 @@ import { createFighter } from '../game/fighter';
 import { getPersonality } from '../game/data/personalities';
 import { getWeapon } from '../game/data/weapons';
 import { FighterModel } from './fighterModel';
+import { disposeTree } from './arena';
 
 /** Small spinning 3D preview of a fighter for the pick screen. */
 export class PreviewRenderer {
@@ -69,6 +70,7 @@ export class PreviewRenderer {
   dispose() {
     cancelAnimationFrame(this.raf);
     this.model?.dispose();
+    disposeTree(this.scene);
     this.renderer.dispose();
   }
 }

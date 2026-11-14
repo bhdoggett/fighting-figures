@@ -91,6 +91,7 @@ export function App() {
           bot={screen.bot}
           difficulty={screen.difficulty}
           duration={matchDuration()}
+          level={profile.level}
           onDone={finishFight}
           onQuit={() => setScreen({ kind: 'pick' })}
         />

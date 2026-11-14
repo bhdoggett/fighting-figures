@@ -2,6 +2,7 @@ import type { BattleResult } from '../game/progression';
 import { XP, xpToNext } from '../game/progression';
 import { MAX_LEVEL } from '../game/data/ranks';
 import { RankBadge } from './RankBadge';
+import { useArmed } from './useArmed';
 import shared from './shared.module.css';
 import styles from './ResultsScreen.module.css';
 
@@ -18,6 +19,7 @@ export interface ResultsInfo {
 
 export function ResultsScreen({ info, onContinue }: { info: ResultsInfo; onContinue: () => void }) {
   const { result } = info;
+  const armed = useArmed();
   const headline = result.won ? 'YOU WIN!' : result.draw ? "IT'S A DRAW!" : 'BOT WINS!';
   const sub = result.won ? 'What a champ!' : result.draw ? 'So close!' : 'Good try! You still earned XP.';
   const leveled = info.levelAfter > info.levelBefore;
@@ -55,7 +57,7 @@ export function ResultsScreen({ info, onContinue }: { info: ResultsInfo; onConti
           <progress className={styles.xpBar} value={pct} max={1} />
           {leveled && <div className={styles.levelUp}>LEVEL UP! Prize time!</div>}
         </div>
-        <button className={shared.big} onClick={onContinue} autoFocus>
+        <button className={shared.big} onClick={onContinue} disabled={!armed}>
           {leveled ? 'Get my prize!' : 'Continue'}
         </button>
       </div>

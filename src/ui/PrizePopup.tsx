@@ -1,6 +1,7 @@
 import type { Prize } from '../game/progression';
 import { isRankUpLevel, rankForLevel } from '../game/data/ranks';
 import { PrizeIcon } from './PrizeIcon';
+import { useArmed } from './useArmed';
 import shared from './shared.module.css';
 import styles from './PrizePopup.module.css';
 
@@ -13,6 +14,7 @@ const KIND_LABEL: Record<Prize['kind'], string> = {
 
 export function PrizePopup({ level, offers, onPick }: { level: number; offers: Prize[]; onPick: (p: Prize) => void }) {
   const rankUp = isRankUpLevel(level);
+  const armed = useArmed(600);
   return (
     <div className={shared.screen}>
       <div className={styles.center}>
@@ -23,7 +25,7 @@ export function PrizePopup({ level, offers, onPick }: { level: number; offers: P
         </p>
         <div className={styles.cards}>
           {offers.map((prize) => (
-            <button key={prize.id} className={prize.kind === 'personality' ? styles.special : styles.card} onClick={() => onPick(prize)}>
+            <button key={prize.id} className={prize.kind === 'personality' ? styles.special : styles.card} onClick={() => onPick(prize)} disabled={!armed}>
               <span className={styles.kind}>{KIND_LABEL[prize.kind]}</span>
               <PrizeIcon prize={prize} />
               <span className={styles.label}>{prize.label}</span>

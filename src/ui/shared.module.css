@@ -65,3 +65,9 @@
     linear-gradient(to bottom, transparent 70%, var(--color-grass) 70%, var(--color-grass) 74%, var(--color-dirt) 74%),
     var(--color-sky);
 }
+
+.button:disabled {
+  opacity: 0.6;
+  transform: none;
+  cursor: default;
+}

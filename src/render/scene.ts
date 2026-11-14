@@ -3,7 +3,7 @@ import type { MatchState, Side } from '../game/match';
 import type { Loadout } from '../game/types';
 import { getPersonality } from '../game/data/personalities';
 import { getCosmetic } from '../game/data/cosmetics';
-import { buildArena } from './arena';
+import { buildArena, disposeTree } from './arena';
 import { Effects, SpeechBubble } from './effects';
 import { FighterModel } from './fighterModel';
 
@@ -167,6 +167,7 @@ export class GameRenderer {
     if (this.models) for (const m of this.models) m.dispose();
     this.effects.dispose();
     for (const b of this.bubbles) b.dispose();
+    disposeTree(this.scene);
     this.renderer.dispose();
   }
 }

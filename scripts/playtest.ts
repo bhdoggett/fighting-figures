@@ -58,7 +58,12 @@ while (Date.now() - start < (dur + 1) * 1000) {
 await page.keyboard.up('KeyW');
 await sleep(500);
 await shot(page, '05-times-up');
-await sleep(3000);
+// Keep mashing Enter/Space like an excited kid while the match wraps up.
+for (let k = 0; k < 20; k++) {
+  await page.keyboard.press(k % 2 ? 'Enter' : 'Space');
+  await sleep(150);
+}
+await sleep(1500);
 await shot(page, '06-results');
 
 const prizeBtn = page.getByRole('button', { name: /Get my prize!|Continue/ });

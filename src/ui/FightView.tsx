@@ -14,6 +14,7 @@ interface Props {
   bot: Loadout;
   difficulty: number;
   duration: number;
+  level: number;
   onDone: (m: MatchState) => void;
   onQuit: () => void;
 }
@@ -23,9 +24,8 @@ const STEP_SEC = 0.8;
 const END_HOLD_SEC = 2.5;
 const HUD_INTERVAL = 1 / 20;
 
-export function FightView({ player, bot, difficulty, duration, onDone, onQuit }: Props) {
+export function FightView({ player, bot, difficulty, duration, level, onDone, onQuit }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hud, setHud] = useState<HudData | null>(null);
   const [paused, setPaused] = useState(false);
   const pausedRef = useRef(false);
@@ -43,9 +43,12 @@ export function FightView({ player, bot, difficulty, duration, onDone, onQuit }:
   };
 
   useEffect(() => {
-    const canvas = canvasRef.current;
     const wrap = wrapRef.current;
-    if (!canvas || !wrap) return;
+    if (!wrap) return;
+    // A fresh canvas per mount, so each fight gets (and releases) its own GPU context.
+    const canvas = document.createElement('canvas');
+    canvas.className = styles.canvas;
+    wrap.prepend(canvas);
 
     const renderer = new GameRenderer(canvas);
     renderer.setLoadouts(player, bot);
@@ -138,6 +141,7 @@ export function FightView({ player, bot, difficulty, duration, onDone, onQuit }:
           dash: 1 - p1.cooldowns.dash / TUNING.dashCooldown,
           superCharge: p1.superCharge,
           banner,
+          level,
           showMouseHint: !wasLocked && fighting && clock < countdownLen + 6,
         });
       }
@@ -152,6 +156,7 @@ export function FightView({ player, bot, difficulty, duration, onDone, onQuit }:
       input.dispose();
       inputRef.current = null;
       renderer.dispose();
+      canvas.remove();
     };
     // The match is created once per mount; the parent remounts with a new key for a new fight.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -159,7 +164,6 @@ export function FightView({ player, bot, difficulty, duration, onDone, onQuit }:
 
   return (
     <div ref={wrapRef} className={styles.wrap}>
-      <canvas ref={canvasRef} className={styles.canvas} />
       {hud && <Hud data={hud} />}
       {paused && (
         <div className={styles.pause}>

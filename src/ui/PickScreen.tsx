@@ -57,23 +57,30 @@ function Cycler({ label, value, sub, onPrev, onNext, count }: { label: string; v
 }
 
 export function PickScreen({ profile, onChange, onFight }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const previewHostRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<PreviewRenderer | null>(null);
   const [saveMode, setSaveMode] = useState<'none' | 'export' | 'import'>('none');
   const [importText, setImportText] = useState('');
   const [saveMsg, setSaveMsg] = useState('');
   const { loadout } = profile;
+  const loadoutRef = useRef(loadout);
+  loadoutRef.current = loadout;
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const host = previewHostRef.current;
+    if (!host) return;
+    const canvas = document.createElement('canvas');
+    canvas.className = styles.previewCanvas;
+    host.appendChild(canvas);
     const preview = new PreviewRenderer(canvas);
     previewRef.current = preview;
+    preview.setLoadout(loadoutRef.current);
     const ro = new ResizeObserver(() => preview.setSize(canvas.clientWidth, canvas.clientHeight));
     ro.observe(canvas);
     return () => {
       ro.disconnect();
       preview.dispose();
+      canvas.remove();
       previewRef.current = null;
     };
   }, []);
@@ -128,7 +135,7 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
         </header>
 
         <section className={`${shared.panel} ${styles.previewPanel}`}>
-          <canvas ref={canvasRef} className={styles.preview} />
+          <div ref={previewHostRef} className={styles.preview} />
           <div className={styles.fighterName}>{personality.name}</div>
           <div className={styles.blurb}>{personality.blurb}</div>
           <div className={styles.quote}>“{personality.lines.taunt[0]}”</div>

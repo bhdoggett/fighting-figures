@@ -122,3 +122,18 @@ export function buildArena(): THREE.Group {
 
   return g;
 }
+
+/** Free every geometry, material, and texture under an object. */
+export function disposeTree(root: THREE.Object3D) {
+  root.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    if (mesh.geometry) mesh.geometry.dispose();
+    const mat = mesh.material as THREE.Material | THREE.Material[] | undefined;
+    if (!mat) return;
+    for (const m of Array.isArray(mat) ? mat : [mat]) {
+      const withMap = m as THREE.Material & { map?: THREE.Texture | null };
+      withMap.map?.dispose();
+      m.dispose();
+    }
+  });
+}
