@@ -133,6 +133,7 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
           power: 1 - p1.cooldowns.power / TUNING.powerCooldown,
           dash: 1 - p1.cooldowns.dash / TUNING.dashCooldown,
           superCharge: p1.superCharge,
+          botSuper: p2.superCharge,
           banner,
           level,
           showHint: fighting && clock < countdownLen + 5,

@@ -106,6 +106,11 @@ export class GameRenderer {
           this.effects.popText('SUPER!', pos, '#ffffff', 1.4);
           break;
         }
+        case 'power': {
+          // Warning cue: a big "!" over the attacker the instant a power move starts.
+          this.effects.popText('!', new THREE.Vector3(e.at.x, 0.4, e.at.z), '#ff4d6d', 1.2);
+          break;
+        }
         case 'line': {
           this.bubbles[e.who].say(e.text);
           break;

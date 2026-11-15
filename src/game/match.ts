@@ -21,6 +21,7 @@ export type MatchEvent =
   | { id: number; type: 'hit'; who: Side; target: Side; damage: number; at: Vec2; big: boolean }
   | { id: number; type: 'ko'; who: Side; target: Side; at: Vec2; super: boolean }
   | { id: number; type: 'super'; who: Side; at: Vec2 }
+  | { id: number; type: 'power'; who: Side; at: Vec2 }
   | { id: number; type: 'line'; who: Side; text: string }
   | { id: number; type: 'respawn'; who: Side; at: Vec2 };
 
@@ -127,6 +128,9 @@ export function stepMatch(m: MatchState, intents: [Intent, Intent], dt: number =
     const f = m.fighters[side];
     if (f.action === 'super' && before[side] !== 'super') {
       emit(m, { type: 'super', who: side, at: { ...f.pos } });
+    }
+    if (f.action === 'power' && before[side] !== 'power') {
+      emit(m, { type: 'power', who: side, at: { ...f.pos } });
     }
   });
 

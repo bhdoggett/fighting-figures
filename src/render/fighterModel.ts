@@ -228,6 +228,14 @@ export class FighterModel {
   private smoothSpeed = 0;
   private drawFacing: number | null = null;
   private family: string;
+  private weaponMaterials: THREE.MeshLambertMaterial[] = [];
+
+  private collectWeaponMaterials(weapon: THREE.Object3D) {
+    weapon.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (mesh.material instanceof THREE.MeshLambertMaterial) this.weaponMaterials.push(mesh.material);
+    });
+  }
 
   constructor(loadout: Loadout) {
     const personality = getPersonality(loadout.personality);
@@ -307,11 +315,13 @@ export class FighterModel {
     }
 
     const weapon = buildWeapon(loadout.weapon);
+    this.collectWeaponMaterials(weapon);
     weapon.position.set(0, -0.62, 0.05);
     weapon.rotation.x = Math.PI / 2;
     this.armR.add(weapon);
     if (this.family === 'daggers') {
       const second = buildWeapon(loadout.weapon);
+      this.collectWeaponMaterials(second);
       second.position.set(0, -0.62, 0.05);
       second.rotation.x = Math.PI / 2;
       this.armL.add(second);
@@ -434,6 +444,9 @@ export class FighterModel {
     // Flash white when hit; glow when super is ready.
     const flash = f.action === 'hitstun' ? 1 - p : 0;
     for (const m of this.materials) m.emissive.setRGB(flash, flash, flash);
+    // Weapon glows red during a power move so it's easy to see coming.
+    const glow = f.action === 'power' ? 0.6 + Math.sin(time * 30) * 0.3 : 0;
+    for (const m of this.weaponMaterials) m.emissive.setRGB(glow, 0, 0);
     const auraMat = this.aura.material as THREE.MeshBasicMaterial;
     const ready = f.superCharge >= 1;
     auraMat.opacity = f.action === 'super' ? 0.45 : ready ? 0.12 + Math.sin(time * 6) * 0.08 : 0;

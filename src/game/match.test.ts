@@ -101,4 +101,13 @@ describe('match', () => {
     m.prevPos[0] = { x: -10, z: 0 };
     expect(drawPosition(m, 0).x).toBe(1);
   });
+
+  it('announces a power move the moment it starts', () => {
+    const m = createMatch(L1, L2, 60);
+    m.fighters[0].invulnT = 0;
+    const intents = idle();
+    intents[0].power = true;
+    stepMatch(m, intents, FIXED_DT);
+    expect(m.events.some((e) => e.type === 'power' && e.who === 0)).toBe(true);
+  });
 });

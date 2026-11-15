@@ -10,6 +10,7 @@ export interface HudData {
   power: number;
   dash: number;
   superCharge: number;
+  botSuper: number;
   banner: string | null;
   showHint: boolean;
   level: number;
@@ -20,7 +21,7 @@ function clock(t: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-function Side({ name, kos, hp, koed, who, level }: { name: string; kos: number; hp: number; koed: boolean; who: 'you' | 'bot'; level?: number }) {
+function Side({ name, kos, hp, koed, who, level, superCharge }: { name: string; kos: number; hp: number; koed: boolean; who: 'you' | 'bot'; level?: number; superCharge?: number }) {
   return (
     <div className={who === 'you' ? styles.sideYou : styles.sideBot}>
       <div className={styles.nameRow}>
@@ -29,6 +30,12 @@ function Side({ name, kos, hp, koed, who, level }: { name: string; kos: number; 
       </div>
       {level !== undefined && <RankBadge level={level} size="sm" />}
       <progress className={hp < 0.3 ? styles.hpLow : styles.hp} value={koed ? 0 : hp} max={1} />
+      {superCharge !== undefined && (
+        <div className={superCharge >= 1 ? styles.botSuperReady : styles.botSuper}>
+          <span className={styles.botSuperLabel}>{superCharge >= 1 ? 'SUPER READY — watch out!' : 'Super'}</span>
+          <progress className={styles.botSuperBar} value={superCharge} max={1} />
+        </div>
+      )}
     </div>
   );
 }
@@ -40,7 +47,7 @@ export function Hud({ data, onPause }: { data: HudData; onPause: () => void }) {
       <div className={styles.top}>
         <Side who="you" name={data.names[0]} kos={data.kos[0]} hp={data.hp[0]} koed={data.koed[0]} level={data.level} />
         <div className={data.time <= 30 ? styles.clockHurry : styles.clock}>{clock(data.time)}</div>
-        <Side who="bot" name={data.names[1]} kos={data.kos[1]} hp={data.hp[1]} koed={data.koed[1]} />
+        <Side who="bot" name={data.names[1]} kos={data.kos[1]} hp={data.hp[1]} koed={data.koed[1]} superCharge={data.botSuper} />
       </div>
 
       <button className={styles.pauseButton} onClick={onPause} aria-label="Pause (P)">
