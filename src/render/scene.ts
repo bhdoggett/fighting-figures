@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { MatchState, Side } from '../game/match';
+import { drawPosition, type MatchState, type Side } from '../game/match';
 import type { Loadout } from '../game/types';
 import { getPersonality } from '../game/data/personalities';
 import { getCosmetic } from '../game/data/cosmetics';
@@ -121,20 +121,20 @@ export class GameRenderer {
   render(m: MatchState, yaw: number, pitch: number, dt: number) {
     this.time += dt;
     if (this.models) {
-      this.models[0].update(m.fighters[0], dt, this.time);
-      this.models[1].update(m.fighters[1], dt, this.time);
+      this.models[0].update(m.fighters[0], dt, this.time, drawPosition(m, 0));
+      this.models[1].update(m.fighters[1], dt, this.time, drawPosition(m, 1));
     }
     this.handleEvents(m);
     this.effects.update(dt);
     ([0, 1] as const).forEach((side) => {
-      const f = m.fighters[side];
       const b = this.bubbles[side];
-      b.sprite.position.set(f.pos.x, 2.9, f.pos.z);
+      const dp = drawPosition(m, side);
+      b.sprite.position.set(dp.x, 2.9, dp.z);
       b.update(dt);
     });
 
     // Over-the-shoulder camera behind player 1.
-    const p = m.fighters[0].pos;
+    const p = drawPosition(m, 0);
     const fw = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
     const right = new THREE.Vector3(-Math.cos(yaw), 0, Math.sin(yaw));
     const height = 1.6 + pitch * 5;

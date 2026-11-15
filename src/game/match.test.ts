@@ -79,4 +79,26 @@ describe('match', () => {
     m.kos = [1, 1];
     expect(winnerOf(m)).toBe('draw');
   });
+
+  it('remembers positions from before the last step for smooth drawing', () => {
+    const m = createMatch(L1, L2, 60);
+    const intents = idle();
+    intents[0].move = { x: 1, z: 0 };
+    stepMatch(m, intents, FIXED_DT);
+    const before = { ...m.fighters[0].pos };
+    stepMatch(m, intents, FIXED_DT);
+    expect(m.prevPos[0]).toEqual(before);
+    expect(m.fighters[0].pos.x).not.toBe(before.x);
+  });
+
+  it('drawPosition blends between steps and snaps after a respawn jump', async () => {
+    const { drawPosition } = await import('./match');
+    const m = createMatch(L1, L2, 60);
+    m.prevPos[0] = { x: 0, z: 0 };
+    m.fighters[0].pos = { x: 1, z: 0 };
+    m.accumulator = FIXED_DT / 2;
+    expect(drawPosition(m, 0).x).toBeCloseTo(0.5);
+    m.prevPos[0] = { x: -10, z: 0 };
+    expect(drawPosition(m, 0).x).toBe(1);
+  });
 });

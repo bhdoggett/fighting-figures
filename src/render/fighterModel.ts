@@ -225,6 +225,8 @@ export class FighterModel {
   private materials: THREE.MeshLambertMaterial[] = [];
   private walkPhase = 0;
   private lastPos = new THREE.Vector3();
+  private smoothSpeed = 0;
+  private drawFacing: number | null = null;
   private family: string;
 
   constructor(loadout: Loadout) {
@@ -325,13 +327,23 @@ export class FighterModel {
     this.root.add(this.body);
   }
 
-  update(f: FighterState, dt: number, time: number) {
-    this.root.position.set(f.pos.x, 0, f.pos.z);
-    this.root.rotation.y = f.facing;
+  /** drawPos: where to draw this frame (blended between game steps); defaults to the fighter's position. */
+  update(f: FighterState, dt: number, time: number, drawPos: { x: number; z: number } = f.pos) {
+    const jumped = Math.hypot(drawPos.x - this.root.position.x, drawPos.z - this.root.position.z) > 3;
+    this.root.position.set(drawPos.x, 0, drawPos.z);
+
+    // Turn smoothly instead of snapping between game steps.
+    if (this.drawFacing === null || jumped) this.drawFacing = f.facing;
+    const diff = Math.atan2(Math.sin(f.facing - this.drawFacing), Math.cos(f.facing - this.drawFacing));
+    this.drawFacing += diff * Math.min(1, dt * 25);
+    this.root.rotation.y = this.drawFacing;
 
     const moved = this.lastPos.distanceTo(this.root.position);
     this.lastPos.copy(this.root.position);
-    const speed = dt > 0 ? moved / dt : 0;
+    const rawSpeed = dt > 0 && !jumped ? moved / dt : 0;
+    // Smooth the measured speed so the walk cycle doesn't flicker.
+    this.smoothSpeed += (rawSpeed - this.smoothSpeed) * Math.min(1, dt * 10);
+    const speed = this.smoothSpeed;
 
     // Reset pose
     this.body.position.set(0, 0, 0);
