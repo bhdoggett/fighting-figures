@@ -164,7 +164,7 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
 
   return (
     <div ref={wrapRef} className={styles.wrap}>
-      {hud && <Hud data={hud} />}
+      {hud && <Hud data={hud} onPause={() => setPausedBoth(true)} />}
       {paused && (
         <div className={styles.pause}>
           <div className={`${shared.panel} ${styles.pausePanel}`}>
@@ -181,6 +181,17 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
             <button className={shared.small} onClick={onQuit}>
               Quit to menu
             </button>
+            <ul className={styles.pauseKeys}>
+              <li><kbd>WASD</kbd> walk</li>
+              <li><kbd>Q</kbd> face opponent</li>
+              <li><kbd>Click</kbd> dash</li>
+              <li><kbd>E</kbd> quick hit</li>
+              <li><kbd>Space</kbd> power move</li>
+              <li><kbd>Shift</kbd>+<kbd>WASD</kbd> / <kbd>Arrows</kbd> dodge</li>
+              <li><kbd>C</kbd> / <kbd>↓</kbd> duck</li>
+              <li><kbd>F</kbd> / <kbd>Enter</kbd> super</li>
+              <li><kbd>P</kbd> / <kbd>Esc</kbd> pause</li>
+            </ul>
           </div>
         </div>
       )}

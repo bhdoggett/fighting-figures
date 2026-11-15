@@ -33,7 +33,7 @@ function Side({ name, kos, hp, koed, who, level }: { name: string; kos: number; 
   );
 }
 
-export function Hud({ data }: { data: HudData }) {
+export function Hud({ data, onPause }: { data: HudData; onPause: () => void }) {
   const superReady = data.superCharge >= 1;
   return (
     <div className={styles.hud}>
@@ -42,6 +42,11 @@ export function Hud({ data }: { data: HudData }) {
         <div className={data.time <= 30 ? styles.clockHurry : styles.clock}>{clock(data.time)}</div>
         <Side who="bot" name={data.names[1]} kos={data.kos[1]} hp={data.hp[1]} koed={data.koed[1]} />
       </div>
+
+      <button className={styles.pauseButton} onClick={onPause} aria-label="Pause (P)">
+        <span className={styles.pauseIcon} aria-hidden="true" />
+        Pause <kbd className={styles.pauseKey}>P</kbd>
+      </button>
 
       {data.banner && (
         <div key={data.banner} className={styles.banner}>

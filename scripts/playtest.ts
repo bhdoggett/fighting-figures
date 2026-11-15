@@ -52,7 +52,19 @@ while (Date.now() - start < (dur + 1) * 1000) {
   if (i % 9 === 0) await page.mouse.click(640, 400);
   i++;
   await sleep(180);
-  if (i === 12) await shot(page, '03-fight');
+  if (i === 12) {
+    await shot(page, '03-fight');
+    // Like a player pressing Esc: free the mouse, then click the on-screen Pause button.
+    await page.evaluate(() => document.exitPointerLock());
+    await sleep(200);
+    if (!(await page.getByText('Keep playing').isVisible())) {
+      await page.locator('button[aria-label="Pause (P)"]').click();
+    }
+    await sleep(500);
+    await shot(page, '03b-paused');
+    await page.getByRole('button', { name: 'Keep playing' }).click();
+    await page.keyboard.press('KeyQ');
+  }
   if (i === 40) await shot(page, '04-fight-later');
 }
 await page.keyboard.up('KeyW');

@@ -28,3 +28,26 @@
   gap: var(--space-4);
   padding: var(--space-6) var(--space-7);
 }
+
+.pauseKeys {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-3) 0 0;
+  border-top: 3px dashed #ccc;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px var(--space-5);
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.pauseKeys kbd {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 13px;
+  background: #fff;
+  border: 2px solid var(--color-ink);
+  border-bottom-width: 4px;
+  border-radius: 4px;
+  padding: 0 6px;
+}
