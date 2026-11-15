@@ -25,7 +25,7 @@ const KEYS: Record<string, KeyAction> = {
   KeyS: 'duck',
   KeyE: 'quick',
   Space: 'power',
-  KeyR: 'dash',
+  KeyQ: 'dash',
   KeyF: 'super',
   Enter: 'super',
   NumpadEnter: 'super',

@@ -43,7 +43,7 @@ await shot(page, '02-countdown');
 await sleep(2200);
 
 // Fight: walk toward the bot and mash attacks.
-const keys = ['KeyE', 'KeyE', 'Space', 'KeyE', 'KeyA', 'KeyR', 'KeyF'];
+const keys = ['KeyE', 'KeyE', 'Space', 'KeyE', 'KeyA', 'KeyQ', 'KeyF'];
 const start = Date.now();
 let i = 0;
 await page.keyboard.down('ArrowUp');

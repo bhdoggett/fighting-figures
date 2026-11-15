@@ -178,7 +178,7 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
               <li><kbd>W</kbd> spin forward</li>
               <li><kbd>A</kbd> / <kbd>D</kbd> dodge</li>
               <li><kbd>S</kbd> duck</li>
-              <li><kbd>R</kbd> dash</li>
+              <li><kbd>Q</kbd> dash</li>
               <li><kbd>E</kbd> quick hit</li>
               <li><kbd>Space</kbd> power move</li>
               <li><kbd>F</kbd> / <kbd>Enter</kbd> super</li>

@@ -13,10 +13,10 @@ describe('mapKey', () => {
     expect(mapKey('KeyS')).toBe('duck');
     expect(mapKey('KeyE')).toBe('quick');
     expect(mapKey('Space')).toBe('power');
-    expect(mapKey('KeyR')).toBe('dash');
+    expect(mapKey('KeyQ')).toBe('dash');
+    expect(mapKey('KeyR')).toBeNull();
     expect(mapKey('KeyF')).toBe('super');
     expect(mapKey('Enter')).toBe('super');
-    expect(mapKey('KeyQ')).toBeNull();
     expect(mapKey('KeyC')).toBeNull();
   });
 });

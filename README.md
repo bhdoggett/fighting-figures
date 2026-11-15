@@ -24,7 +24,7 @@ Add `?dur=30` to the address for a 30-second match (handy for testing).
 | S | Duck (quick hits and dashes miss you) |
 | E | Quick hit |
 | Space | Power move (each fighter has their own) |
-| R | Dash attack |
+| Q | Dash attack |
 | F or Enter | Super move, once the meter is full |
 | P or Esc | Pause (or click the Pause button) |
 

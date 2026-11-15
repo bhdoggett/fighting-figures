@@ -70,9 +70,9 @@ describe('InputController (lock-on)', () => {
     input.dispose();
   });
 
-  it('R dashes', () => {
+  it('Q dashes', () => {
     const { input, self, foe } = setup();
-    key('keydown', 'KeyR');
+    key('keydown', 'KeyQ');
     expect(input.intent(self, foe).dash).toBe(true);
     input.dispose();
   });

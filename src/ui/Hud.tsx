@@ -60,7 +60,7 @@ export function Hud({ data, onPause }: { data: HudData; onPause: () => void }) {
 
       <div className={styles.bottom}>
         <div className={styles.meter}>
-          <span className={styles.meterLabel}>Dash · R</span>
+          <span className={styles.meterLabel}>Dash · Q</span>
           <progress className={data.dash >= 1 ? styles.readyBar : styles.chargeBar} value={data.dash} max={1} />
         </div>
         <div className={styles.meter}>

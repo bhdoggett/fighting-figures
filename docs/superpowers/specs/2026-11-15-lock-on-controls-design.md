@@ -12,8 +12,8 @@ Owner and son prefer arrows for movement and WASD for dodges/duck. Without a mou
 - The game never grabs the mouse; the cursor stays visible (pause button always clickable).
 
 ## Designer calls
-- E quick hit, Space power, R dash (replaces click), F/Enter super, P/Esc pause.
-- Removed: mouse look, click dash, right-click, Q, Shift+direction, C.
+- E quick hit, Space power, Q dash (replaces click; owner moved it from R to Q, closer to WASD), F/Enter super, P/Esc pause.
+- Removed: mouse look, click dash, right-click, Shift+direction, C.
 - Attacks always aim at the opponent. Backward walk at 80% speed.
 - While the opponent is KO'd the camera holds its last angle.
 
