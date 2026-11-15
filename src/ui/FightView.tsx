@@ -110,7 +110,7 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
         tauntsSaid = true;
       }
       if (fighting && !match.over) {
-        input.autoFollow(match.fighters[0], match.fighters[1], dt);
+        input.updateCamera(match.fighters[0], match.fighters[1], dt);
         runFrame(match, getIntents, dt);
       }
       if (match.over) {

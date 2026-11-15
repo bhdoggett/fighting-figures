@@ -51,7 +51,7 @@ export function Hud({ data }: { data: HudData }) {
 
       {data.koed[0] && !data.banner && <div className={styles.respawn}>Bouncing back...</div>}
 
-      {data.showMouseHint && <div className={styles.hint}>Click the screen to grab the mouse!</div>}
+      {data.showMouseHint && <div className={styles.hint}>Click to grab the mouse! Press Q to face your opponent.</div>}
 
       <div className={styles.bottom}>
         <div className={styles.meter}>

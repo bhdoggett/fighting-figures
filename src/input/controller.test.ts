@@ -54,4 +54,47 @@ describe('InputController', () => {
     expect(input.intent(self, foe).power).toBe(false);
     input.dispose();
   });
+
+  it('never turns the camera on its own', () => {
+    const { input, self, foe } = setup();
+    foe.pos = { x: 10, z: 0 };
+    input.cameraYaw = 0;
+    for (let i = 0; i < 180; i++) input.updateCamera(self, foe, 1 / 60);
+    expect(input.cameraYaw).toBe(0);
+    input.dispose();
+  });
+
+  it('Q swings the camera to face the opponent quickly', () => {
+    const { input, self, foe } = setup();
+    foe.pos = { x: 10, z: 0 };
+    input.cameraYaw = 0;
+    key('keydown', 'KeyQ');
+    for (let i = 0; i < 30; i++) input.updateCamera(self, foe, 1 / 60);
+    expect(input.cameraYaw).toBeCloseTo(Math.PI / 2, 1);
+    input.dispose();
+  });
+
+  it('Q still faces where a KO\'d opponent is', () => {
+    const { input, self, foe } = setup();
+    foe.pos = { x: -10, z: 0 };
+    foe.action = 'ko';
+    input.cameraYaw = 0;
+    key('keydown', 'KeyQ');
+    for (let i = 0; i < 30; i++) input.updateCamera(self, foe, 1 / 60);
+    expect(Number.isFinite(input.cameraYaw)).toBe(true);
+    expect(input.cameraYaw).toBeCloseTo(-Math.PI / 2, 1);
+    input.dispose();
+  });
+
+  it('holding Q does not keep re-swinging after you look away', () => {
+    const { input, self, foe } = setup();
+    foe.pos = { x: 10, z: 0 };
+    key('keydown', 'KeyQ');
+    for (let i = 0; i < 30; i++) input.updateCamera(self, foe, 1 / 60);
+    input.cameraYaw = 0;
+    key('keydown', 'KeyQ', { repeat: true });
+    for (let i = 0; i < 30; i++) input.updateCamera(self, foe, 1 / 60);
+    expect(input.cameraYaw).toBe(0);
+    input.dispose();
+  });
 });

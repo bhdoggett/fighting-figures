@@ -19,6 +19,7 @@ Add `?dur=30` to the address for a 30-second match (handy for testing).
 |---|---|
 | W A S D | Walk |
 | Mouse | Look around (click the game first to grab the mouse; Esc to let go) |
+| Q | Turn to face your opponent |
 | Click | Dash attack |
 | E or right-click | Quick hit |
 | Space | Power move (each fighter has their own) |
@@ -26,8 +27,6 @@ Add `?dur=30` to the address for a 30-second match (handy for testing).
 | C or down arrow | Duck (quick hits and dashes miss you) |
 | F or Enter | Super move, once the meter is full |
 | Esc or P | Pause |
-
-If you don't touch the mouse for a moment, the camera turns toward your opponent on its own.
 
 ## Fighters
 

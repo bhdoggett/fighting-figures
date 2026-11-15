@@ -18,6 +18,7 @@ describe('mapKey', () => {
     expect(mapKey('Enter', false)).toBe('super');
     expect(mapKey('Space', false)).toBe('power');
     expect(mapKey('KeyE', false)).toBe('quick');
+    expect(mapKey('KeyQ', false)).toBe('face-foe');
     expect(mapKey('KeyZ', false)).toBeNull();
   });
 });

@@ -12,7 +12,8 @@ export type KeyAction =
   | 'duck'
   | 'super'
   | 'power'
-  | 'quick';
+  | 'quick'
+  | 'face-foe';
 
 const MOVE_KEYS: Record<string, KeyAction> = {
   KeyW: 'move-forward',
@@ -39,6 +40,7 @@ const OTHER_KEYS: Record<string, KeyAction> = {
   NumpadEnter: 'super',
   Space: 'power',
   KeyE: 'quick',
+  KeyQ: 'face-foe',
 };
 
 /** Map a keyboard code (KeyboardEvent.code) to a game action. */
@@ -67,9 +69,8 @@ export function moveFromKeys(held: Set<KeyAction>, yaw: number): Vec2 {
 const EDGE_ACTIONS = new Set<KeyAction>(['dodge-left', 'dodge-right', 'dodge-forward', 'dodge-back', 'super', 'power', 'quick']);
 const AUTO_AIM_RANGE = 6;
 const MOUSE_SENSITIVITY = 0.0028;
-const AUTO_FOLLOW_DELAY_MS = 1200;
 const INPUT_BUFFER_MS = 250;
-const AUTO_FOLLOW_SPEED = 2.6;
+const FACE_FOE_SPEED = 9;
 
 export class InputController {
   cameraYaw = 0;
@@ -80,8 +81,8 @@ export class InputController {
   private target: HTMLElement;
   private dragging = false;
   enabled = true;
-  /** performance.now() of the last camera turn by the mouse */
-  lastMouseTurn = -Infinity;
+  /** True while a Q "face the opponent" camera swing is in progress. */
+  private facingFoe = false;
 
   constructor(target: HTMLElement) {
     this.target = target;
@@ -113,6 +114,10 @@ export class InputController {
     const action = mapKey(e.code, e.shiftKey);
     if (!action) return;
     e.preventDefault();
+    if (action === 'face-foe') {
+      if (!e.repeat) this.facingFoe = true;
+      return;
+    }
     if (EDGE_ACTIONS.has(action)) {
       if (!e.repeat) this.pending.set(action, performance.now());
     } else {
@@ -158,7 +163,8 @@ export class InputController {
   private onMouseMove = (e: MouseEvent) => {
     if (!this.enabled) return;
     if (!this.locked && !this.dragging) return;
-    if (e.movementX !== 0) this.lastMouseTurn = performance.now();
+    // Turning with the mouse takes over from a Q swing.
+    if (e.movementX !== 0) this.facingFoe = false;
     this.cameraYaw -= e.movementX * MOUSE_SENSITIVITY;
     this.cameraPitch = Math.max(-0.1, Math.min(0.9, this.cameraPitch + e.movementY * MOUSE_SENSITIVITY));
   };
@@ -195,27 +201,30 @@ export class InputController {
     return it;
   }
 
-  /**
-   * Gently swing the camera toward the opponent when the mouse hasn't been used for a moment,
-   * so younger players never lose track of the fight.
-   */
-  autoFollow(self: FighterState, foe: FighterState, dt: number) {
-    if (performance.now() - this.lastMouseTurn < AUTO_FOLLOW_DELAY_MS) return;
-    if (foe.action === 'ko' || self.action === 'ko') return;
+  /** Advance a Q "face the opponent" swing. The camera never turns on its own otherwise. */
+  updateCamera(self: FighterState, foe: FighterState, dt: number) {
+    if (!this.facingFoe) return;
     const dx = foe.pos.x - self.pos.x;
     const dz = foe.pos.z - self.pos.z;
-    if (Math.hypot(dx, dz) < 0.8) return;
+    if (Math.hypot(dx, dz) < 0.01) {
+      this.facingFoe = false;
+      return;
+    }
     const target = Math.atan2(dx, dz);
-    let diff = target - this.cameraYaw;
-    diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-    const step = Math.sign(diff) * Math.min(Math.abs(diff), AUTO_FOLLOW_SPEED * dt * (0.3 + Math.min(1, Math.abs(diff))));
-    this.cameraYaw += step;
+    const diff = Math.atan2(Math.sin(target - this.cameraYaw), Math.cos(target - this.cameraYaw));
+    if (Math.abs(diff) < 0.02) {
+      this.cameraYaw = target;
+      this.facingFoe = false;
+      return;
+    }
+    this.cameraYaw += Math.sign(diff) * Math.min(Math.abs(diff), FACE_FOE_SPEED * dt);
   }
 
   /** Clear held keys (e.g. when pausing). */
   reset() {
     this.held.clear();
     this.pending.clear();
+    this.facingFoe = false;
   }
 
   dispose() {

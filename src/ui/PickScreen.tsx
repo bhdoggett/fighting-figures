@@ -201,12 +201,14 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
           <ul className={styles.keys}>
             <li><kbd>W A S D</kbd> walk</li>
             <li><kbd>Mouse</kbd> look around</li>
+            <li><kbd>Q</kbd> face your opponent</li>
             <li><kbd>Click</kbd> dash attack</li>
             <li><kbd>E</kbd> / <kbd>Right-click</kbd> quick hit</li>
             <li><kbd>Space</kbd> power move</li>
             <li><kbd>Shift</kbd>+<kbd>WASD</kbd> or <kbd>Arrows</kbd> dodge</li>
             <li><kbd>C</kbd> / <kbd>↓</kbd> duck</li>
             <li><kbd>F</kbd> / <kbd>Enter</kbd> SUPER!</li>
+            <li><kbd>P</kbd> / <kbd>Esc</kbd> pause</li>
           </ul>
           <p className={styles.goal}>Most KOs in 3 minutes wins!</p>
         </section>
