@@ -51,13 +51,13 @@ export function newProfile(): Profile {
   };
 }
 
-export const XP = { battle: 40, win: 60, draw: 25, perKo: 5, perSuper: 10 } as const;
+export const XP = { battle: 40, win: 60, draw: 25, perKo: 8, perSuper: 10 } as const;
 
 export function xpForBattle(r: BattleResult): number {
   return XP.battle + (r.won ? XP.win : 0) + (r.draw ? XP.draw : 0) + XP.perKo * r.kos + XP.perSuper * r.supersLanded;
 }
 
-/** About 100 typical battles (~9 hours) from level 1 to Obsidian at 25. */
+/** About 100 typical 3-minute battles (~5 hours) from level 1 to Obsidian at 25. */
 export function xpToNext(level: number): number {
   return 100 + 50 * (level - 1);
 }

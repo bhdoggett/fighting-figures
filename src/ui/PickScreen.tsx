@@ -208,7 +208,7 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
             <li><kbd>C</kbd> / <kbd>↓</kbd> duck</li>
             <li><kbd>F</kbd> / <kbd>Enter</kbd> SUPER!</li>
           </ul>
-          <p className={styles.goal}>Most KOs in 5 minutes wins!</p>
+          <p className={styles.goal}>Most KOs in 3 minutes wins!</p>
         </section>
 
           <div className={styles.saveButtons}>

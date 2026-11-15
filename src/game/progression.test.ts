@@ -15,8 +15,8 @@ describe('xpForBattle', () => {
     expect(xpForBattle({ won: false, draw: false, kos: 0, supersLanded: 0 })).toBe(40);
   });
   it('adds bonuses', () => {
-    expect(xpForBattle({ won: true, draw: false, kos: 3, supersLanded: 1 })).toBe(40 + 60 + 15 + 10);
-    expect(xpForBattle({ won: false, draw: true, kos: 1, supersLanded: 0 })).toBe(40 + 25 + 5);
+    expect(xpForBattle({ won: true, draw: false, kos: 3, supersLanded: 1 })).toBe(40 + 60 + 24 + 10);
+    expect(xpForBattle({ won: false, draw: true, kos: 1, supersLanded: 0 })).toBe(40 + 25 + 8);
   });
 });
 
@@ -24,8 +24,8 @@ describe('pacing', () => {
   it('reaching Obsidian (level 25) takes about 100+ typical battles', () => {
     let total = 0;
     for (let l = 1; l < 25; l++) total += xpToNext(l);
-    // A typical battle: ~15 KOs, wins a bit over half the time.
-    const typical = 40 + 0.6 * 60 + 15 * 5 + 10;
+    // A typical 3-minute battle: ~9 KOs, wins a bit over half the time.
+    const typical = 40 + 0.6 * 60 + 9 * 8 + 10;
     expect(total / typical).toBeGreaterThanOrEqual(100);
     expect(total / typical).toBeLessThanOrEqual(140);
   });
@@ -102,7 +102,7 @@ describe('pending prizes', () => {
   it('finishBattle queues one prize per level gained and saves stats', () => {
     const p = { ...newProfile(), xp: 95 };
     const { profile, levelsGained, xp } = finishBattle(p, { won: true, draw: false, kos: 30, supersLanded: 0 });
-    expect(xp).toBe(40 + 60 + 150);
+    expect(xp).toBe(40 + 60 + 240);
     expect(levelsGained).toEqual([2, 3]);
     expect(profile.pendingPrizes).toEqual([2, 3]);
     expect(profile.battles).toBe(1);

@@ -23,7 +23,7 @@ function prizeScreenFor(p: Profile): Screen {
 
 function matchDuration(): number {
   const dur = Number(new URLSearchParams(window.location.search).get('dur'));
-  return Number.isFinite(dur) && dur > 0 ? dur : 300;
+  return Number.isFinite(dur) && dur > 0 ? dur : 180;
 }
 
 export function App() {

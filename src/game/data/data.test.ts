@@ -14,13 +14,15 @@ describe('personalities', () => {
   });
 
   it('have the spec super charge times and damage', () => {
-    expect(PERSONALITIES.tank.superChargeSec).toBe(90);
+    expect(PERSONALITIES.tank.superChargeSec).toBe(54);
     expect(PERSONALITIES.tank.superDamage).toBe('ko');
-    expect(PERSONALITIES.hothead.superChargeSec).toBe(60);
+    expect(PERSONALITIES.hothead.superChargeSec).toBe(36);
     expect(PERSONALITIES.hothead.superDamage).toBe('ko');
-    expect(PERSONALITIES.trickster.superChargeSec).toBe(40);
+    expect(PERSONALITIES.trickster.superChargeSec).toBe(24);
     expect(PERSONALITIES.trickster.superDamage).toBe(0.6);
-    expect(PERSONALITIES.ninja.superChargeSec).toBe(25);
+    expect(PERSONALITIES.ninja.superChargeSec).toBe(15);
+    expect(PERSONALITIES.robot.superChargeSec).toBe(30);
+    expect(PERSONALITIES.wizard.superChargeSec).toBe(42);
     expect(PERSONALITIES.ninja.superDamage).toBe(0.4);
   });
 

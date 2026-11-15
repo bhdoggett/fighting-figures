@@ -1,6 +1,6 @@
 # Fighting Figures
 
-A goofy, blocky 3D fighting game for the browser. Pick a fighter, grab a weapon, and bonk a computer opponent. The fighter with the most KOs after 5 minutes wins. Every battle earns XP, every level-up gives you a prize to pick, and every 5 levels you rank up (Wood, Stone, Iron, Gold, Diamond, Obsidian).
+A goofy, blocky 3D fighting game for the browser. Pick a fighter, grab a weapon, and bonk a computer opponent. The fighter with the most KOs after 3 minutes wins. Every battle earns XP, every level-up gives you a prize to pick, and every 5 levels you rank up (Wood, Stone, Iron, Gold, Diamond, Obsidian).
 
 ## Play
 
@@ -33,12 +33,12 @@ If you don't touch the mouse for a moment, the camera turns toward your opponent
 
 | Fighter | Speed | Power | Health | Super |
 |---|---|---|---|---|
-| Hothead | 3 | 5 | 2 | 60 s charge, instant KO |
-| Ninja | 5 | 2 | 3 | 25 s charge, 40% damage |
-| Tank | 1 | 3 | 6 | 90 s charge, instant KO |
-| Trickster | 4 | 3 | 3 | 40 s charge, 60% damage |
-| Robo-Bonk (rank-up prize) | 2 | 4 | 4 | 50 s charge, 75% damage |
-| Grumpy Wizard (rank-up prize) | 2 | 5 | 3 | 70 s charge, instant KO |
+| Hothead | 3 | 5 | 2 | 36 s charge, instant KO |
+| Ninja | 5 | 2 | 3 | 15 s charge, 40% damage |
+| Tank | 1 | 3 | 6 | 54 s charge, instant KO |
+| Trickster | 4 | 3 | 3 | 24 s charge, 60% damage |
+| Robo-Bonk (rank-up prize) | 2 | 4 | 4 | 30 s charge, 75% damage |
+| Grumpy Wizard (rank-up prize) | 2 | 5 | 3 | 42 s charge, instant KO |
 
 ## Saving
 

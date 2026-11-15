@@ -41,7 +41,7 @@ export interface MatchState {
   rng: () => number;
 }
 
-export function createMatch(p1: Loadout, p2: Loadout, duration = 300, rng: () => number = Math.random): MatchState {
+export function createMatch(p1: Loadout, p2: Loadout, duration = 180, rng: () => number = Math.random): MatchState {
   const f1 = createFighter('p1', getPersonality(p1.personality), getWeapon(p1.weapon), SPAWNS[0]);
   const f2 = createFighter('p2', getPersonality(p2.personality), getWeapon(p2.weapon), SPAWNS[1]);
   return {
