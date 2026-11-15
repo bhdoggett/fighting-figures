@@ -137,7 +137,9 @@ export class InputController {
     else if (this.pending.has('dodge-forward')) it.dodge = 'forward';
 
     // While busy (mid-swing, stunned), keep presses so they fire as soon as you're free.
-    if (self.action === 'idle' || self.action === 'walk') this.pending.clear();
+    // Also keep them while ducking or standing up, so an attack fires right after you stand.
+    const free = (self.action === 'idle' || self.action === 'walk') && !self.ducking && self.standUpT <= 0;
+    if (free) this.pending.clear();
     return it;
   }
 

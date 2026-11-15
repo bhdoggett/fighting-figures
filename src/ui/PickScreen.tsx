@@ -203,7 +203,7 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
             <li><kbd>←</kbd> <kbd>→</kbd> circle around</li>
             <li><kbd>W</kbd> spin forward</li>
             <li><kbd>A</kbd> / <kbd>D</kbd> dodge left / right</li>
-            <li><kbd>S</kbd> duck (quick hits and dashes miss)</li>
+            <li><kbd>S</kbd> duck (quick hits miss, but you can't attack)</li>
             <li><kbd>E</kbd> quick hit</li>
             <li><kbd>Space</kbd> power move</li>
             <li><kbd>Q</kbd> dash attack</li>

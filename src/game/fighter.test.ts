@@ -121,4 +121,39 @@ describe('fighter', () => {
     run(d1, d2, { quick: true }, 1);
     expect(h2.maxHp - h2.hp).toBeGreaterThan(d2.maxHp - d2.hp);
   });
+
+  it('dash attacks hit a ducking target', () => {
+    const [f1, f2] = pair();
+    f2.pos = { x: 0, z: 3 };
+    run(f1, f2, { dash: true }, 0.5, { duck: true });
+    expect(f2.hp).toBeLessThan(f2.maxHp);
+  });
+
+  it('cannot attack while ducking', () => {
+    const f = make('p1', 'hothead');
+    stepFighter(f, { ...emptyIntent(), duck: true }, DT);
+    stepFighter(f, { ...emptyIntent(), duck: true, quick: true }, DT);
+    expect(f.action).not.toBe('quick');
+    stepFighter(f, { ...emptyIntent(), duck: true, power: true }, DT);
+    expect(f.action).not.toBe('power');
+    stepFighter(f, { ...emptyIntent(), duck: true, dash: true }, DT);
+    expect(f.action).not.toBe('dash');
+  });
+
+  it('takes a moment to stand up before attacking', () => {
+    const f = make('p1', 'hothead');
+    stepFighter(f, { ...emptyIntent(), duck: true }, DT);
+    stepFighter(f, { ...emptyIntent(), quick: true }, DT);
+    expect(f.action).not.toBe('quick');
+    for (let t = 0; t < 0.2; t += DT) stepFighter(f, emptyIntent(), DT);
+    stepFighter(f, { ...emptyIntent(), quick: true }, DT);
+    expect(f.action).toBe('quick');
+  });
+
+  it('can still dodge out of a duck', () => {
+    const f = make('p1', 'hothead');
+    stepFighter(f, { ...emptyIntent(), duck: true }, DT);
+    stepFighter(f, { ...emptyIntent(), duck: true, dodge: 'left' }, DT);
+    expect(f.action).toBe('dodge');
+  });
 });

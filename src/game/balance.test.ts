@@ -82,4 +82,37 @@ describe('balance', () => {
     }
     expect(masherKos).toBeLessThanOrEqual(botKos * 1.2);
   });
+
+  it('holding duck is not better than standing against a level-15 bot', () => {
+    const play = (duck: boolean) => {
+      let diff = 0;
+      for (const per of ['hothead', 'tank', 'ninja', 'trickster'] as PersonalityId[]) {
+        const rng = mulberry(3);
+        const l1: Loadout = { personality: per, weapon: 'sword-wood', skin: 'skin-blue' };
+        const l2: Loadout = { personality: 'trickster', weapon: 'sword-wood', skin: 'skin-red' };
+        const m = createMatch(l1, l2, 180, rng);
+        const brain = createBotBrain();
+        let tick = 0;
+        while (!m.over) {
+          const [f1, f2] = m.fighters;
+          const dx = f2.pos.x - f1.pos.x;
+          const dz = f2.pos.z - f1.pos.z;
+          const len = Math.hypot(dx, dz) || 1;
+          const p: Intent = {
+            ...emptyIntent(),
+            move: { x: dx / len, z: dz / len },
+            facing: Math.atan2(dx, dz),
+            duck,
+            quick: len < 2.4 && tick % 24 === 0,
+            power: len < 2.4 && tick % 150 === 0,
+          };
+          stepMatch(m, [p, botIntent(brain, f2, f1, difficultyForLevel(15), rng, FIXED_DT)], FIXED_DT);
+          tick++;
+        }
+        diff += m.kos[0] - m.kos[1];
+      }
+      return diff;
+    };
+    expect(play(true)).toBeLessThan(play(false));
+  });
 });

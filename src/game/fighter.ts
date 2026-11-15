@@ -37,6 +37,8 @@ export interface FighterState {
   cooldowns: { power: number; dash: number; dodge: number; quick: number };
   superCharge: number;
   ducking: boolean;
+  /** Time left standing up after a duck; no attacks until it reaches 0. */
+  standUpT: number;
   invulnT: number;
   koTimer: number;
   /** Consecutive hits taken without a break; the third bounces you free. */
@@ -81,6 +83,7 @@ export const TUNING = {
   knockback: 5,
   respawnInvuln: 1.5,
   duckSpeedMul: 0.35,
+  standUpDur: 0.2,
 };
 
 export function emptyIntent(): Intent {
@@ -103,6 +106,7 @@ export function createFighter(id: 'p1' | 'p2', personality: Personality, weapon:
     cooldowns: { power: 0, dash: 0, dodge: 0, quick: 0 },
     superCharge: 0,
     ducking: false,
+    standUpT: 0,
     invulnT: TUNING.respawnInvuln,
     koTimer: 0,
     comboHits: 0,
@@ -137,6 +141,7 @@ export function stepFighter(f: FighterState, intent: Intent, dt: number): Fighte
   f.cooldowns.quick = Math.max(0, f.cooldowns.quick - dt);
   f.invulnT = Math.max(0, f.invulnT - dt);
   f.comboT = Math.max(0, f.comboT - dt);
+  f.standUpT = Math.max(0, f.standUpT - dt);
   if (f.comboT <= 0) f.comboHits = 0;
 
   if (f.action === 'ko') {
@@ -151,7 +156,10 @@ export function stepFighter(f: FighterState, intent: Intent, dt: number): Fighte
     if (intent.facing !== null) f.facing = intent.facing;
     // Faster fighters also swing faster: speed 5 = 0.9x, speed 1 = 1.1x.
     const swing = f.weapon.swingTimeMul * (1.15 - 0.05 * f.personality.speed);
-    if (intent.super && f.superCharge >= 1) {
+    // No attacking from a duck: you have to stand up first, which takes a moment.
+    if (f.ducking && !intent.duck) f.standUpT = TUNING.standUpDur;
+    const canAttack = !intent.duck && f.standUpT <= 0;
+    if (canAttack && intent.super && f.superCharge >= 1) {
       f.superCharge = 0;
       startAction(f, 'super', TUNING.superDur);
     } else if (intent.dodge && f.cooldowns.dodge <= 0) {
@@ -169,13 +177,13 @@ export function stepFighter(f: FighterState, intent: Intent, dt: number): Fighte
       const dir = dirs[intent.dodge];
       const speed = TUNING.dodgeDistance / TUNING.dodgeDur;
       f.push = { x: dir.x * speed, z: dir.z * speed };
-    } else if (intent.dash && f.cooldowns.dash <= 0) {
+    } else if (canAttack && intent.dash && f.cooldowns.dash <= 0) {
       startAction(f, 'dash', TUNING.dashDur);
       f.cooldowns.dash = TUNING.dashCooldown;
       const fw = forward(f.facing);
       const speed = TUNING.dashDistance / TUNING.dashDur;
       f.push = { x: fw.x * speed, z: fw.z * speed };
-    } else if (intent.power && f.cooldowns.power <= 0) {
+    } else if (canAttack && intent.power && f.cooldowns.power <= 0) {
       startAction(f, 'power', TUNING.powerDur * swing);
       f.cooldowns.power = TUNING.powerCooldown;
       const fw = forward(f.facing);
@@ -187,7 +195,7 @@ export function stepFighter(f: FighterState, intent: Intent, dt: number): Fighte
         const speed = 2.5 / (TUNING.powerDur * swing * 0.4);
         f.push = { x: fw.x * speed, z: fw.z * speed };
       }
-    } else if (intent.quick && f.cooldowns.quick <= 0) {
+    } else if (canAttack && intent.quick && f.cooldowns.quick <= 0) {
       startAction(f, 'quick', TUNING.quickDur * swing);
       // Short breather after each quick hit so mashing has a rhythm, not a stun-lock.
       f.cooldowns.quick = TUNING.quickDur * swing + TUNING.quickRecovery;
@@ -258,7 +266,7 @@ export function attackShape(f: FighterState): AttackShape | null {
     case 'quick':
       return { range: reach + 0.5, arc: deg(60), windows: [[0.33, 0.66]], damage: () => TUNING.quickDamage * mul, duckable: true };
     case 'dash':
-      return { range: reach + 0.4, arc: deg(60), windows: [[0, 1]], damage: () => TUNING.dashDamage * mul, duckable: true };
+      return { range: reach + 0.4, arc: deg(60), windows: [[0, 1]], damage: () => TUNING.dashDamage * mul, duckable: false };
     case 'super': {
       const sd = f.personality.superDamage;
       return {

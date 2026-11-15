@@ -21,7 +21,7 @@ Add `?dur=30` to the address for a 30-second match (handy for testing).
 | ← / → | Circle around your opponent |
 | W | Spin forward |
 | A / D | Dodge left / right |
-| S | Duck (quick hits and dashes miss you) |
+| S | Duck: quick hits miss you, but you can't attack until you stand back up |
 | E | Quick hit |
 | Space | Power move (each fighter has their own) |
 | Q | Dash attack |
