@@ -17,16 +17,18 @@ Add `?dur=30` to the address for a 30-second match (handy for testing).
 
 | Key | What it does |
 |---|---|
-| W A S D | Walk |
-| Mouse | Look around (click the game first to grab the mouse; Esc to let go) |
-| Q | Turn to face your opponent |
-| Click | Dash attack |
-| E or right-click | Quick hit |
+| ↑ / ↓ | Move toward / away from your opponent |
+| ← / → | Circle around your opponent |
+| W | Spin forward |
+| A / D | Dodge left / right |
+| S | Duck (quick hits and dashes miss you) |
+| E | Quick hit |
 | Space | Power move (each fighter has their own) |
-| Shift + W/A/S/D, or arrow keys | Dodge |
-| C or down arrow | Duck (quick hits and dashes miss you) |
+| R | Dash attack |
 | F or Enter | Super move, once the meter is full |
-| Esc or P | Pause |
+| P or Esc | Pause (or click the Pause button) |
+
+The camera stays locked on: you always face your opponent. No mouse needed.
 
 ## Fighters
 

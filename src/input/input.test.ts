@@ -2,39 +2,41 @@ import { describe, expect, it } from 'vitest';
 import { mapKey, moveFromKeys } from './input';
 
 describe('mapKey', () => {
-  it('maps the spec controls', () => {
-    expect(mapKey('ArrowLeft', false)).toBe('dodge-left');
-    expect(mapKey('ArrowRight', false)).toBe('dodge-right');
-    expect(mapKey('ArrowUp', false)).toBe('dodge-forward');
-    expect(mapKey('KeyA', true)).toBe('dodge-left');
-    expect(mapKey('KeyD', true)).toBe('dodge-right');
-    expect(mapKey('KeyW', true)).toBe('dodge-forward');
-    expect(mapKey('KeyS', true)).toBe('dodge-back');
-    expect(mapKey('KeyA', false)).toBe('move-left');
-    expect(mapKey('KeyW', false)).toBe('move-forward');
-    expect(mapKey('KeyC', false)).toBe('duck');
-    expect(mapKey('ArrowDown', false)).toBe('duck');
-    expect(mapKey('KeyF', false)).toBe('super');
-    expect(mapKey('Enter', false)).toBe('super');
-    expect(mapKey('Space', false)).toBe('power');
-    expect(mapKey('KeyE', false)).toBe('quick');
-    expect(mapKey('KeyQ', false)).toBe('face-foe');
-    expect(mapKey('KeyZ', false)).toBeNull();
+  it('maps the lock-on keyboard controls', () => {
+    expect(mapKey('ArrowUp')).toBe('move-forward');
+    expect(mapKey('ArrowDown')).toBe('move-back');
+    expect(mapKey('ArrowLeft')).toBe('move-left');
+    expect(mapKey('ArrowRight')).toBe('move-right');
+    expect(mapKey('KeyW')).toBe('dodge-forward');
+    expect(mapKey('KeyA')).toBe('dodge-left');
+    expect(mapKey('KeyD')).toBe('dodge-right');
+    expect(mapKey('KeyS')).toBe('duck');
+    expect(mapKey('KeyE')).toBe('quick');
+    expect(mapKey('Space')).toBe('power');
+    expect(mapKey('KeyR')).toBe('dash');
+    expect(mapKey('KeyF')).toBe('super');
+    expect(mapKey('Enter')).toBe('super');
+    expect(mapKey('KeyQ')).toBeNull();
+    expect(mapKey('KeyC')).toBeNull();
   });
 });
 
 describe('moveFromKeys', () => {
-  it('moves forward along camera yaw', () => {
+  it('moves toward the opponent along the camera yaw', () => {
     const m = moveFromKeys(new Set(['move-forward']), 0);
     expect(m.x).toBeCloseTo(0);
     expect(m.z).toBeCloseTo(1);
   });
-  it('moves right relative to camera', () => {
+  it('circles right relative to the camera', () => {
     const m = moveFromKeys(new Set(['move-right']), 0);
     expect(m.x).toBeCloseTo(-1);
     expect(m.z).toBeCloseTo(0);
   });
-  it('normalizes diagonals', () => {
+  it('walks backward a bit slower', () => {
+    const m = moveFromKeys(new Set(['move-back']), 0);
+    expect(m.z).toBeCloseTo(-0.8);
+  });
+  it('caps diagonals at full speed', () => {
     const m = moveFromKeys(new Set(['move-forward', 'move-right']), 0);
     expect(Math.hypot(m.x, m.z)).toBeCloseTo(1);
   });

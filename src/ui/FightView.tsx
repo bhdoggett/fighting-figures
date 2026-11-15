@@ -52,7 +52,7 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
 
     const renderer = new GameRenderer(canvas);
     renderer.setLoadouts(player, bot);
-    const input = new InputController(canvas);
+    const input = new InputController();
     inputRef.current = input;
     const match = createMatch(player, bot, duration);
     const brain = createBotBrain();
@@ -70,7 +70,6 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
     let hudTimer = 0;
     let endTimer = 0;
     let done = false;
-    let wasLocked = false;
     let tauntsSaid = false;
 
     const onKey = (e: KeyboardEvent) => {
@@ -79,13 +78,7 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
         setPausedBoth(!pausedRef.current);
       }
     };
-    const onLockChange = () => {
-      const locked = document.pointerLockElement === canvas;
-      if (wasLocked && !locked && !match.over && !pausedRef.current) setPausedBoth(true);
-      wasLocked = locked;
-    };
     window.addEventListener('keydown', onKey);
-    document.addEventListener('pointerlockchange', onLockChange);
 
     const getIntents = () => {
       const [p1, p2] = match.fighters;
@@ -142,7 +135,7 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
           superCharge: p1.superCharge,
           banner,
           level,
-          showMouseHint: !wasLocked && fighting && clock < countdownLen + 6,
+          showHint: fighting && clock < countdownLen + 5,
         });
       }
     };
@@ -151,7 +144,6 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener('keydown', onKey);
-      document.removeEventListener('pointerlockchange', onLockChange);
       ro.disconnect();
       input.dispose();
       inputRef.current = null;
@@ -173,7 +165,6 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
               className={shared.big}
               onClick={() => {
                 setPausedBoth(false);
-                inputRef.current?.requestLock();
               }}
             >
               Keep playing
@@ -182,13 +173,14 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
               Quit to menu
             </button>
             <ul className={styles.pauseKeys}>
-              <li><kbd>WASD</kbd> walk</li>
-              <li><kbd>Q</kbd> face opponent</li>
-              <li><kbd>Click</kbd> dash</li>
+              <li><kbd>↑</kbd> <kbd>↓</kbd> move</li>
+              <li><kbd>←</kbd> <kbd>→</kbd> circle</li>
+              <li><kbd>W</kbd> spin forward</li>
+              <li><kbd>A</kbd> / <kbd>D</kbd> dodge</li>
+              <li><kbd>S</kbd> duck</li>
+              <li><kbd>R</kbd> dash</li>
               <li><kbd>E</kbd> quick hit</li>
               <li><kbd>Space</kbd> power move</li>
-              <li><kbd>Shift</kbd>+<kbd>WASD</kbd> / <kbd>Arrows</kbd> dodge</li>
-              <li><kbd>C</kbd> / <kbd>↓</kbd> duck</li>
               <li><kbd>F</kbd> / <kbd>Enter</kbd> super</li>
               <li><kbd>P</kbd> / <kbd>Esc</kbd> pause</li>
             </ul>

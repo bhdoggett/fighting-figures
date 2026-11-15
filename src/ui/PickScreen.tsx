@@ -199,14 +199,14 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
         <section className={`${shared.panel} ${styles.controls}`}>
           <h2 className={styles.h2}>Controls</h2>
           <ul className={styles.keys}>
-            <li><kbd>W A S D</kbd> walk</li>
-            <li><kbd>Mouse</kbd> look around</li>
-            <li><kbd>Q</kbd> face your opponent</li>
-            <li><kbd>Click</kbd> dash attack</li>
-            <li><kbd>E</kbd> / <kbd>Right-click</kbd> quick hit</li>
+            <li><kbd>↑</kbd> <kbd>↓</kbd> move closer / back up</li>
+            <li><kbd>←</kbd> <kbd>→</kbd> circle around</li>
+            <li><kbd>W</kbd> spin forward</li>
+            <li><kbd>A</kbd> / <kbd>D</kbd> dodge left / right</li>
+            <li><kbd>S</kbd> duck (quick hits and dashes miss)</li>
+            <li><kbd>E</kbd> quick hit</li>
             <li><kbd>Space</kbd> power move</li>
-            <li><kbd>Shift</kbd>+<kbd>WASD</kbd> or <kbd>Arrows</kbd> dodge</li>
-            <li><kbd>C</kbd> / <kbd>↓</kbd> duck</li>
+            <li><kbd>R</kbd> dash attack</li>
             <li><kbd>F</kbd> / <kbd>Enter</kbd> SUPER!</li>
             <li><kbd>P</kbd> / <kbd>Esc</kbd> pause</li>
           </ul>

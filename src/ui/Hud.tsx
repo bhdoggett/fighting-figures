@@ -11,7 +11,7 @@ export interface HudData {
   dash: number;
   superCharge: number;
   banner: string | null;
-  showMouseHint: boolean;
+  showHint: boolean;
   level: number;
 }
 
@@ -56,11 +56,11 @@ export function Hud({ data, onPause }: { data: HudData; onPause: () => void }) {
 
       {data.koed[0] && !data.banner && <div className={styles.respawn}>Bouncing back...</div>}
 
-      {data.showMouseHint && <div className={styles.hint}>Click to grab the mouse! Press Q to face your opponent.</div>}
+      {data.showHint && <div className={styles.hint}>Arrows move · W A D dodge · S duck</div>}
 
       <div className={styles.bottom}>
         <div className={styles.meter}>
-          <span className={styles.meterLabel}>Dash · Click</span>
+          <span className={styles.meterLabel}>Dash · R</span>
           <progress className={data.dash >= 1 ? styles.readyBar : styles.chargeBar} value={data.dash} max={1} />
         </div>
         <div className={styles.meter}>

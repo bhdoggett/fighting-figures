@@ -43,31 +43,26 @@ await shot(page, '02-countdown');
 await sleep(2200);
 
 // Fight: walk toward the bot and mash attacks.
-const keys = ['KeyE', 'KeyE', 'Space', 'KeyE', 'ArrowLeft', 'KeyE', 'KeyF'];
+const keys = ['KeyE', 'KeyE', 'Space', 'KeyE', 'KeyA', 'KeyR', 'KeyF'];
 const start = Date.now();
 let i = 0;
-await page.keyboard.down('KeyW');
+await page.keyboard.down('ArrowUp');
 while (Date.now() - start < (dur + 1) * 1000) {
   await page.keyboard.press(keys[i % keys.length]);
-  if (i % 9 === 0) await page.mouse.click(640, 400);
+  if (i % 20 === 10) await page.keyboard.down('ArrowRight');
+  if (i % 20 === 15) await page.keyboard.up('ArrowRight');
   i++;
   await sleep(180);
   if (i === 12) {
     await shot(page, '03-fight');
-    // Like a player pressing Esc: free the mouse, then click the on-screen Pause button.
-    await page.evaluate(() => document.exitPointerLock());
-    await sleep(200);
-    if (!(await page.getByText('Keep playing').isVisible())) {
-      await page.locator('button[aria-label="Pause (P)"]').click();
-    }
+    await page.locator('button[aria-label="Pause (P)"]').click();
     await sleep(500);
     await shot(page, '03b-paused');
     await page.getByRole('button', { name: 'Keep playing' }).click();
-    await page.keyboard.press('KeyQ');
   }
   if (i === 40) await shot(page, '04-fight-later');
 }
-await page.keyboard.up('KeyW');
+await page.keyboard.up('ArrowUp');
 await sleep(500);
 await shot(page, '05-times-up');
 // Keep mashing Enter/Space like an excited kid while the match wraps up.
