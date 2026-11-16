@@ -40,7 +40,7 @@ function Side({ name, kos, hp, koed, who, level, superCharge }: { name: string; 
   );
 }
 
-export function Hud({ data, onPause }: { data: HudData; onPause: () => void }) {
+export function Hud({ data, onPause, touch = false }: { data: HudData; onPause: () => void; touch?: boolean }) {
   const superReady = data.superCharge >= 1;
   return (
     <div className={styles.hud}>
@@ -63,9 +63,9 @@ export function Hud({ data, onPause }: { data: HudData; onPause: () => void }) {
 
       {data.koed[0] && !data.banner && <div className={styles.respawn}>Bouncing back...</div>}
 
-      {data.showHint && <div className={styles.hint}>Arrows move · W A D dodge · S duck</div>}
+      {data.showHint && <div className={styles.hint}>{touch ? 'Drag the stick to move · tap buttons to fight' : 'Arrows move · W A D dodge · S duck'}</div>}
 
-      <div className={styles.bottom}>
+      <div className={touch ? styles.hidden : styles.bottom}>
         <div className={styles.meter}>
           <span className={styles.meterLabel}>Dash · Q</span>
           <progress className={data.dash >= 1 ? styles.readyBar : styles.chargeBar} value={data.dash} max={1} />

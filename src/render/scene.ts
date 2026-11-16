@@ -25,10 +25,11 @@ export class GameRenderer {
   private loadouts: [Loadout, Loadout] | null = null;
   private bubbles: [SpeechBubble, SpeechBubble] = [new SpeechBubble(), new SpeechBubble()];
 
-  constructor(canvas: HTMLCanvasElement) {
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
-    this.renderer.shadowMap.enabled = true;
+  /** lowPower: phones/tablets get no shadows and a lower resolution so the fight stays smooth. */
+  constructor(canvas: HTMLCanvasElement, lowPower = false) {
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: !lowPower });
+    this.renderer.setPixelRatio(Math.min(lowPower ? 1.5 : 2, window.devicePixelRatio));
+    this.renderer.shadowMap.enabled = !lowPower;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 

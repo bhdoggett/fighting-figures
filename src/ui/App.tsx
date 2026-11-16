@@ -8,6 +8,9 @@ import { PickScreen } from './PickScreen';
 import { FightView } from './FightView';
 import { ResultsScreen, type ResultsInfo } from './ResultsScreen';
 import { PrizePopup } from './PrizePopup';
+import { isTouchDevice } from './device';
+import { loadSettings, saveSettings, type Settings } from '../game/settings';
+import { RotateHint } from './RotateHint';
 
 type Screen =
   | { kind: 'pick' }
@@ -26,8 +29,14 @@ function matchDuration(): number {
   return Number.isFinite(dur) && dur > 0 ? dur : 180;
 }
 
-export function App() {
+function Screens() {
   const [profile, setProfile] = useState<Profile>(() => loadProfile(window.localStorage));
+  const [settings, setSettings] = useState<Settings>(() => loadSettings(window.localStorage));
+  const [touch] = useState(isTouchDevice);
+
+  useEffect(() => {
+    saveSettings(window.localStorage, settings);
+  }, [settings]);
   // Unclaimed prizes from a closed tab are offered first thing.
   const [screen, setScreen] = useState<Screen>(() => prizeScreenFor(profile));
 
@@ -82,7 +91,16 @@ export function App() {
 
   switch (screen.kind) {
     case 'pick':
-      return <PickScreen profile={profile} onChange={setProfile} onFight={startFight} />;
+      return (
+        <PickScreen
+          profile={profile}
+          onChange={setProfile}
+          onFight={startFight}
+          touch={touch}
+          leftie={settings.leftie}
+          onLeftie={(leftie) => setSettings({ ...settings, leftie })}
+        />
+      );
     case 'fight':
       return (
         <FightView
@@ -92,6 +110,8 @@ export function App() {
           difficulty={screen.difficulty}
           duration={matchDuration()}
           level={profile.level}
+          touch={touch}
+          leftie={settings.leftie}
           onDone={finishFight}
           onQuit={() => setScreen({ kind: 'pick' })}
         />
@@ -101,4 +121,13 @@ export function App() {
     case 'prize':
       return <PrizePopup level={screen.level} offers={screen.offers} onPick={pickPrize} />;
   }
+}
+
+export function App() {
+  return (
+    <>
+      <Screens />
+      <RotateHint />
+    </>
+  );
 }

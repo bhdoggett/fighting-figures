@@ -6,6 +6,7 @@ import { TUNING } from '../game/fighter';
 import { GameRenderer } from '../render/scene';
 import { InputController } from '../input/input';
 import { Hud, type HudData } from './Hud';
+import { TouchControls } from './TouchControls';
 import shared from './shared.module.css';
 import styles from './FightView.module.css';
 
@@ -15,6 +16,8 @@ interface Props {
   difficulty: number;
   duration: number;
   level: number;
+  touch: boolean;
+  leftie: boolean;
   onDone: (m: MatchState) => void;
   onQuit: () => void;
 }
@@ -24,10 +27,11 @@ const STEP_SEC = 0.8;
 const END_HOLD_SEC = 2.5;
 const HUD_INTERVAL = 1 / 20;
 
-export function FightView({ player, bot, difficulty, duration, level, onDone, onQuit }: Props) {
+export function FightView({ player, bot, difficulty, duration, level, touch, leftie, onDone, onQuit }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [hud, setHud] = useState<HudData | null>(null);
   const [paused, setPaused] = useState(false);
+  const [touchInput, setTouchInput] = useState<InputController | null>(null);
   const pausedRef = useRef(false);
   const inputRef = useRef<InputController | null>(null);
   const onDoneRef = useRef(onDone);
@@ -50,10 +54,11 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
     canvas.className = styles.canvas;
     wrap.prepend(canvas);
 
-    const renderer = new GameRenderer(canvas);
+    const renderer = new GameRenderer(canvas, touch);
     renderer.setLoadouts(player, bot);
     const input = new InputController();
     inputRef.current = input;
+    if (touch) setTouchInput(input);
     const match = createMatch(player, bot, duration);
     const brain = createBotBrain();
     // Start looking at the opponent.
@@ -157,7 +162,10 @@ export function FightView({ player, bot, difficulty, duration, level, onDone, on
 
   return (
     <div ref={wrapRef} className={styles.wrap}>
-      {hud && <Hud data={hud} onPause={() => setPausedBoth(true)} />}
+      {hud && <Hud data={hud} touch={touch} onPause={() => setPausedBoth(true)} />}
+      {touch && touchInput && hud && !paused && (
+        <TouchControls input={touchInput} leftie={leftie} powerReady={hud.power >= 1} dashReady={hud.dash >= 1} superCharge={hud.superCharge} />
+      )}
       {paused && (
         <div className={styles.pause}>
           <div className={`${shared.panel} ${styles.pausePanel}`}>

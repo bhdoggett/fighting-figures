@@ -311,3 +311,19 @@
 .botSuperBar::-moz-progress-bar {
   background: var(--color-orange);
 }
+
+.hidden {
+  display: none;
+}
+
+/* Short screens (phones held sideways): smaller HUD panels. */
+@media (max-height: 500px) {
+  .top { top: var(--space-2); left: var(--space-2); right: var(--space-2); gap: var(--space-2); }
+  .side { padding: var(--space-1) var(--space-2); max-width: 260px; }
+  .nameRow { font-size: var(--text-sm); }
+  .bar { height: 12px; }
+  .clock { font-size: var(--text-lg); min-width: 80px; padding: 0 var(--space-2); }
+  .banner { font-size: 72px; top: 28%; }
+  .pauseButton { top: 96px; right: var(--space-2); font-size: var(--text-sm); }
+  .hint { top: 30%; font-size: var(--text-sm); }
+}

@@ -18,7 +18,21 @@ interface Props {
   profile: Profile;
   onChange: (p: Profile) => void;
   onFight: () => void;
+  touch: boolean;
+  leftie: boolean;
+  onLeftie: (leftie: boolean) => void;
 }
+
+const TOUCH_LABELS: Record<PreviewMove, string> = {
+  'dodge-forward': 'Spin',
+  'dodge-left': '◀ Dodge',
+  'dodge-right': 'Dodge ▶',
+  duck: 'Duck',
+  quick: 'Hit',
+  power: 'Power',
+  dash: 'Dash',
+  super: 'SUPER',
+};
 
 function cycle<T>(list: T[], current: T, dir: 1 | -1): T {
   const i = list.indexOf(current);
@@ -58,7 +72,7 @@ function Cycler({ label, value, sub, onPrev, onNext, count }: { label: string; v
   );
 }
 
-export function PickScreen({ profile, onChange, onFight }: Props) {
+export function PickScreen({ profile, onChange, onFight, touch, leftie, onLeftie }: Props) {
   const previewHostRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<PreviewRenderer | null>(null);
   const [saveMode, setSaveMode] = useState<'none' | 'export' | 'import'>('none');
@@ -267,6 +281,24 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
         <button className={`${shared.big} ${styles.fight}`} onClick={onFight}>
           FIGHT!
         </button>
+        {touch ? (
+        <section className={`${shared.panel} ${styles.controls}`}>
+          <h2 className={styles.h2}>Controls</h2>
+          <p className={styles.tryIt}>Left thumb: drag the stick to move. Right thumb: tap buttons to fight. Tap one below to try it!</p>
+          <div className={styles.touchMoves}>
+            {PREVIEW_MOVES.map(({ move }) => (
+              <button key={move} className={shared.small} onClick={() => tryMove(move)}>
+                {TOUCH_LABELS[move]}
+              </button>
+            ))}
+          </div>
+          <label className={styles.leftieToggle}>
+            <input type="checkbox" checked={leftie} onChange={(e) => onLeftie(e.target.checked)} />
+            <span>Leftie: buttons on the left, stick on the right</span>
+          </label>
+          <p className={styles.goal}>Most KOs in 3 minutes wins!</p>
+        </section>
+        ) : (
         <section className={`${shared.panel} ${styles.controls}`}>
           <h2 className={styles.h2}>Controls</h2>
           <p className={styles.tryIt}>Press a key (or click it) to try the move!</p>
@@ -285,6 +317,7 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
           </ul>
           <p className={styles.goal}>Most KOs in 3 minutes wins!</p>
         </section>
+        )}
 
           <div className={styles.saveButtons}>
             <button className={shared.small} onClick={() => { setSaveMode(saveMode === 'export' ? 'none' : 'export'); setSaveMsg(''); }}>

@@ -71,3 +71,12 @@
   text-align: center;
   opacity: 0.8;
 }
+
+@media (max-height: 500px) {
+  .center { gap: var(--space-2); padding: var(--space-2); }
+  .sub { font-size: var(--text-md); }
+  .cards { gap: var(--space-3); }
+  .card { width: 170px; min-height: 0; padding: var(--space-2); }
+  .label { font-size: var(--text-md); }
+  .detail { font-size: 13px; }
+}
