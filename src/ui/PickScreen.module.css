@@ -303,3 +303,51 @@
       'save save';
   }
 }
+
+.previewWrap {
+  position: relative;
+  width: 100%;
+}
+
+.caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--space-3);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--color-yellow);
+  text-shadow:
+    -3px -3px 0 var(--color-ink),
+    3px -3px 0 var(--color-ink),
+    -3px 3px 0 var(--color-ink),
+    3px 3px 0 var(--color-ink);
+  pointer-events: none;
+  animation: captionPop 0.3s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+
+@keyframes captionPop {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.tryIt {
+  margin: 0 0 var(--space-2);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-purple);
+}
+
+.keyButton {
+  all: unset;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin: -1px -4px;
+}
+
+.keyButton:hover,
+.keyButton:focus-visible {
+  background: var(--color-yellow);
+}

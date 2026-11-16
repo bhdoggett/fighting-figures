@@ -8,6 +8,8 @@ import { COSMETICS, getCosmetic } from '../game/data/cosmetics';
 import { MAX_LEVEL } from '../game/data/ranks';
 import type { CosmeticSlot } from '../game/types';
 import { PreviewRenderer } from '../render/preview';
+import { PREVIEW_MOVES, previewCaption, type PreviewMove } from '../render/previewMoves';
+import { mapKey } from '../input/input';
 import { RankBadge } from './RankBadge';
 import shared from './shared.module.css';
 import styles from './PickScreen.module.css';
@@ -62,6 +64,8 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
   const [saveMode, setSaveMode] = useState<'none' | 'export' | 'import'>('none');
   const [importText, setImportText] = useState('');
   const [saveMsg, setSaveMsg] = useState('');
+  const [caption, setCaption] = useState<{ text: string; id: number } | null>(null);
+  const captionTimer = useRef(0);
   const { loadout } = profile;
   const loadoutRef = useRef(loadout);
   loadoutRef.current = loadout;
@@ -88,6 +92,66 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
   useEffect(() => {
     previewRef.current?.setLoadout(loadout);
   }, [loadout]);
+
+  const personalityRef = useRef(getPersonality(loadout.personality));
+  personalityRef.current = getPersonality(loadout.personality);
+
+  const showCaption = (move: PreviewMove) => {
+    setCaption({ text: previewCaption(move, personalityRef.current), id: Date.now() });
+    window.clearTimeout(captionTimer.current);
+    captionTimer.current = window.setTimeout(() => setCaption(null), 1200);
+  };
+
+  const tryMove = (move: PreviewMove) => {
+    const preview = previewRef.current;
+    if (!preview) return;
+    if (move === 'duck') {
+      preview.setDucking(true);
+      window.setTimeout(() => preview.setDucking(false), 800);
+    } else {
+      preview.play(move);
+    }
+    showCaption(move);
+  };
+
+  // Fight keys show off moves on the menu (but not while typing a save code).
+  useEffect(() => {
+    const typing = (e: KeyboardEvent) => e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement;
+    const toMove = (code: string): PreviewMove | null => {
+      const a = mapKey(code);
+      if (!a || a.startsWith('move-')) return null;
+      return a as PreviewMove;
+    };
+    const down = (e: KeyboardEvent) => {
+      if (typing(e)) return;
+      // Let Enter/Space press a menu button that was reached with Tab.
+      if (e.target instanceof HTMLButtonElement && (e.code === 'Enter' || e.code === 'Space')) return;
+      const move = toMove(e.code);
+      if (!move) return;
+      e.preventDefault();
+      if (e.repeat) return;
+      const preview = previewRef.current;
+      if (move === 'duck') {
+        preview?.setDucking(true);
+        showCaption('duck');
+      } else {
+        preview?.play(move);
+        showCaption(move);
+      }
+    };
+    const up = (e: KeyboardEvent) => {
+      if (toMove(e.code) === 'duck') previewRef.current?.setDucking(false);
+    };
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+      window.clearTimeout(captionTimer.current);
+    };
+    // showCaption only touches refs and state setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const personality = getPersonality(loadout.personality);
   const weapon = getWeapon(loadout.weapon);
@@ -135,7 +199,14 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
         </header>
 
         <section className={`${shared.panel} ${styles.previewPanel}`}>
-          <div ref={previewHostRef} className={styles.preview} />
+          <div className={styles.previewWrap}>
+            <div ref={previewHostRef} className={styles.preview} />
+            {caption && (
+              <div key={caption.id} className={styles.caption}>
+                {caption.text}
+              </div>
+            )}
+          </div>
           <div className={styles.fighterName}>{personality.name}</div>
           <div className={styles.blurb}>{personality.blurb}</div>
           <div className={styles.quote}>“{personality.lines.taunt[0]}”</div>
@@ -198,16 +269,18 @@ export function PickScreen({ profile, onChange, onFight }: Props) {
         </button>
         <section className={`${shared.panel} ${styles.controls}`}>
           <h2 className={styles.h2}>Controls</h2>
+          <p className={styles.tryIt}>Press a key (or click it) to try the move!</p>
           <ul className={styles.keys}>
             <li><kbd>↑</kbd> <kbd>↓</kbd> move closer / back up</li>
             <li><kbd>←</kbd> <kbd>→</kbd> circle around</li>
-            <li><kbd>W</kbd> spin forward</li>
-            <li><kbd>A</kbd> / <kbd>D</kbd> dodge left / right</li>
-            <li><kbd>S</kbd> duck (quick hits miss, but you can't attack)</li>
-            <li><kbd>E</kbd> quick hit</li>
-            <li><kbd>Space</kbd> power move</li>
-            <li><kbd>Q</kbd> dash attack</li>
-            <li><kbd>F</kbd> / <kbd>Enter</kbd> SUPER!</li>
+            {PREVIEW_MOVES.map(({ move, key, label }) => (
+              <li key={move}>
+                <button className={styles.keyButton} onMouseDown={(e) => e.preventDefault()} onClick={() => tryMove(move)}>
+                  <kbd>{key}</kbd>
+                  {key === 'F' && <> / <kbd>Enter</kbd></>} {label}
+                </button>
+              </li>
+            ))}
             <li><kbd>P</kbd> / <kbd>Esc</kbd> pause</li>
           </ul>
           <p className={styles.goal}>Most KOs in 3 minutes wins!</p>
