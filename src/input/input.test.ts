@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mapKey, moveFromKeys } from './input';
+import { mapKey, moveFromKeys, moveFromStick } from './input';
 
 describe('mapKey', () => {
   it('maps the lock-on keyboard controls', () => {
@@ -39,5 +39,22 @@ describe('moveFromKeys', () => {
   it('caps diagonals at full speed', () => {
     const m = moveFromKeys(new Set(['move-forward', 'move-right']), 0);
     expect(Math.hypot(m.x, m.z)).toBeCloseTo(1);
+  });
+});
+
+describe('moveFromStick', () => {
+  it('pushing up moves toward the opponent', () => {
+    const m = moveFromStick(0, 1, 0);
+    expect(m.z).toBeCloseTo(1);
+  });
+  it('pushing right circles right', () => {
+    const m = moveFromStick(1, 0, 0);
+    expect(m.x).toBeCloseTo(-1);
+  });
+  it('pulling back is a bit slower', () => {
+    expect(moveFromStick(0, -1, 0).z).toBeCloseTo(-0.8);
+  });
+  it('ignores tiny wobbles near the center', () => {
+    expect(moveFromStick(0.05, 0.05, 0)).toEqual({ x: 0, z: 0 });
   });
 });

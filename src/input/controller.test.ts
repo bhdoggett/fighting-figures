@@ -112,4 +112,26 @@ describe('InputController (lock-on)', () => {
     expect(input.intent(self, foe).quick).toBe(false);
     input.dispose();
   });
+
+  it('touch joystick moves the fighter', () => {
+    const { input, self, foe } = setup();
+    input.setStick(0, 1);
+    expect(input.intent(self, foe).move.z).toBeCloseTo(1);
+    input.setStick(0, 0);
+    expect(input.intent(self, foe).move.z).toBe(0);
+    input.dispose();
+  });
+
+  it('touch buttons trigger moves', () => {
+    const { input, self, foe } = setup();
+    input.tap('power');
+    expect(input.intent(self, foe).power).toBe(true);
+    input.tap('dodge-left');
+    expect(input.intent(self, foe).dodge).toBe('left');
+    input.setTouchDuck(true);
+    expect(input.intent(self, foe).duck).toBe(true);
+    input.setTouchDuck(false);
+    expect(input.intent(self, foe).duck).toBe(false);
+    input.dispose();
+  });
 });

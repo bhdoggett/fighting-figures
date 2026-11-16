@@ -59,6 +59,26 @@ export function moveFromKeys(held: Set<KeyAction>, yaw: number): Vec2 {
   return { x, z };
 }
 
+const STICK_DEAD_ZONE = 0.15;
+
+/** Camera-relative movement from a touch joystick (x right, y up = toward opponent), each -1..1. */
+export function moveFromStick(x: number, y: number, yaw: number): Vec2 {
+  if (Math.hypot(x, y) < STICK_DEAD_ZONE) return { x: 0, z: 0 };
+  const f = y < 0 ? y * BACK_SPEED : y;
+  const fw = { x: Math.sin(yaw), z: Math.cos(yaw) };
+  const right = { x: -Math.cos(yaw), z: Math.sin(yaw) };
+  let mx = fw.x * f + right.x * x;
+  let mz = fw.z * f + right.z * x;
+  const len = Math.hypot(mx, mz);
+  if (len > 1) {
+    mx /= len;
+    mz /= len;
+  }
+  return { x: mx, z: mz };
+}
+
+export type TouchAction = 'dodge-left' | 'dodge-right' | 'dodge-forward' | 'super' | 'power' | 'quick' | 'dash';
+
 const EDGE_ACTIONS = new Set<KeyAction>(['dodge-left', 'dodge-right', 'dodge-forward', 'super', 'power', 'quick', 'dash']);
 const INPUT_BUFFER_MS = 250;
 /** How quickly the lock-on camera catches up to the angle to the opponent (per second). */
@@ -82,6 +102,8 @@ export class InputController {
   private held = new Set<KeyAction>();
   /** Edge-triggered presses waiting to be consumed, with the time they were pressed. */
   private pending = new Map<KeyAction, number>();
+  private stick = { x: 0, y: 0 };
+  private touchDuck = false;
 
   constructor() {
     window.addEventListener('keydown', this.onKeyDown);
@@ -108,6 +130,21 @@ export class InputController {
 
   private onBlur = () => this.reset();
 
+  /** Touch joystick position, each axis -1..1 (y up = toward opponent). */
+  setStick(x: number, y: number) {
+    this.stick = { x, y };
+  }
+
+  /** A touch button was tapped. */
+  tap(action: TouchAction) {
+    if (this.enabled) this.pending.set(action, performance.now());
+  }
+
+  /** Touch duck button held or released. */
+  setTouchDuck(down: boolean) {
+    this.touchDuck = down;
+  }
+
   /** Keep the camera locked on to the opponent. Holds still while they're KO'd. */
   updateCamera(self: FighterState, foe: FighterState, dt: number) {
     if (foe.action === 'ko' || self.action === 'ko') return;
@@ -126,8 +163,9 @@ export class InputController {
 
     const facing = foe.action === 'ko' ? null : angleTo(self, foe);
     it.facing = facing ?? this.cameraYaw;
-    it.move = moveFromKeys(this.held, it.facing);
-    it.duck = this.held.has('duck');
+    const keys = moveFromKeys(this.held, it.facing);
+    it.move = keys.x !== 0 || keys.z !== 0 ? keys : moveFromStick(this.stick.x, this.stick.y, it.facing);
+    it.duck = this.held.has('duck') || this.touchDuck;
     it.quick = this.pending.has('quick');
     it.power = this.pending.has('power');
     it.dash = this.pending.has('dash');
@@ -147,6 +185,8 @@ export class InputController {
   reset() {
     this.held.clear();
     this.pending.clear();
+    this.touchDuck = false;
+    this.stick = { x: 0, y: 0 };
   }
 
   dispose() {
