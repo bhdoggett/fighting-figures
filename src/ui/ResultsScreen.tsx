@@ -9,6 +9,7 @@ import styles from './ResultsScreen.module.css';
 export interface ResultsInfo {
   result: BattleResult;
   xp: number;
+  coins: number;
   botKos: number;
   botName: string;
   levelBefore: number;
@@ -49,6 +50,7 @@ export function ResultsScreen({ info, onContinue }: { info: ResultsInfo; onConti
             {result.kos > 0 && <li>{result.kos} KO{result.kos > 1 ? 's' : ''} <b>+{result.kos * XP.perKo}</b></li>}
             {result.supersLanded > 0 && <li>Supers landed <b>+{result.supersLanded * XP.perSuper}</b></li>}
             <li className={styles.total}>Total <b>+{info.xp} XP</b></li>
+            {info.coins > 0 && <li className={styles.total}>Figure Coins <b>+{info.coins}</b></li>}
           </ul>
           <div className={styles.levelRow}>
             <RankBadge level={info.levelAfter} />

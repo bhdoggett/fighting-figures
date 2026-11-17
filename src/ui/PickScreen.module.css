@@ -470,3 +470,22 @@
     padding: var(--space-2);
   }
 }
+
+.shopButton {
+  composes: button from './shared.module.css';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background: var(--color-paper);
+}
+
+.coinIcon {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  background: var(--color-yellow);
+  border: 3px solid var(--color-ink);
+  border-radius: 50%;
+  box-shadow: inset -3px -3px 0 #e0a800;
+}

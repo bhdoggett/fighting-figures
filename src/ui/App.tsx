@@ -11,9 +11,11 @@ import { PrizePopup } from './PrizePopup';
 import { isTouchDevice } from './device';
 import { loadSettings, saveSettings, type Settings } from '../game/settings';
 import { RotateHint } from './RotateHint';
+import { ShopScreen } from './ShopScreen';
 
 type Screen =
   | { kind: 'pick' }
+  | { kind: 'shop' }
   | { kind: 'fight'; bot: Loadout; difficulty: number; key: number }
   | { kind: 'results'; info: ResultsInfo }
   | { kind: 'prize'; level: number; offers: Prize[] };
@@ -59,13 +61,14 @@ function Screens() {
         supersLanded: m.supersLanded[0],
       };
       const before = profile;
-      const { profile: leveled, xp } = finishBattle(profile, result);
+      const { profile: leveled, xp, coins } = finishBattle(profile, result);
       setProfile(leveled);
       setScreen({
         kind: 'results',
         info: {
           result,
           xp,
+          coins,
           botKos: m.kos[1],
           botName: m.fighters[1].personality.name,
           levelBefore: before.level,
@@ -96,6 +99,7 @@ function Screens() {
           profile={profile}
           onChange={setProfile}
           onFight={startFight}
+          onShop={() => setScreen({ kind: 'shop' })}
           touch={touch}
           leftie={settings.leftie}
           onLeftie={(leftie) => setSettings({ ...settings, leftie })}
@@ -116,6 +120,8 @@ function Screens() {
           onQuit={() => setScreen({ kind: 'pick' })}
         />
       );
+    case 'shop':
+      return <ShopScreen profile={profile} onChange={setProfile} onBack={() => setScreen({ kind: 'pick' })} />;
     case 'results':
       return <ResultsScreen info={screen.info} onContinue={afterResults} />;
     case 'prize':

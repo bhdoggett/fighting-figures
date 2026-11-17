@@ -156,6 +156,13 @@ export class Effects {
     }
   }
 
+  /** A small rising bubble or spark (poison / fire). */
+  puff(pos: THREE.Vector3, color: number) {
+    const v = new THREE.Vector3((Math.random() - 0.5) * 0.6, 1.2 + Math.random(), (Math.random() - 0.5) * 0.6);
+    const start = pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.6, 0.6 + Math.random() * 1.2, (Math.random() - 0.5) * 0.6));
+    this.spawnCube(start, color, 0.12, v, 0.7, 0);
+  }
+
   /** KO poof: the fighter bursts into blocks and confetti. */
   poof(pos: THREE.Vector3, colors: number[]) {
     for (let i = 0; i < 26; i++) {

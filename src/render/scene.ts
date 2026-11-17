@@ -24,6 +24,10 @@ export class GameRenderer {
   private shake = 0;
   private loadouts: [Loadout, Loadout] | null = null;
   private bubbles: [SpeechBubble, SpeechBubble] = [new SpeechBubble(), new SpeechBubble()];
+  private darts = new Map<number, THREE.Mesh>();
+  private dartGeo = new THREE.BoxGeometry(0.08, 0.08, 0.45);
+  private dartMat = new THREE.MeshLambertMaterial({ color: 0x7ed957, emissive: 0x2a6a10 });
+  private puffTimer = 0;
 
   /** lowPower: phones/tablets get no shadows and a lower resolution so the fight stays smooth. */
   constructor(canvas: HTMLCanvasElement, lowPower = false) {
@@ -91,6 +95,10 @@ export class GameRenderer {
           const words = e.big ? BIG_WORDS : HIT_WORDS;
           this.effects.popText(words[Math.floor(Math.random() * words.length)], pos, e.big ? '#ff8c42' : '#ffd23f', e.big ? 1.3 : 1);
           this.effects.sparks(pos, e.big);
+          if (e.zap) {
+            this.effects.popText('ZAP!', pos, '#ffe14d', 1.2);
+            this.effects.ring(pos, 0xffe14d, 2);
+          }
           if (e.big) this.shake = Math.max(this.shake, 0.25);
           break;
         }
@@ -131,6 +139,18 @@ export class GameRenderer {
       this.models[1].update(m.fighters[1], dt, this.time, drawPosition(m, 1));
     }
     this.handleEvents(m);
+    this.syncDarts(m);
+    this.puffTimer -= dt;
+    if (this.puffTimer <= 0) {
+      this.puffTimer = 0.08;
+      for (const f of m.fighters) {
+        if (f.action === 'ko') continue;
+        const p = new THREE.Vector3(f.pos.x, 0, f.pos.z);
+        if (f.status.poison > 0) this.effects.puff(p, 0x7ed957);
+        if (f.status.burn > 0) this.effects.puff(p, Math.random() < 0.5 ? 0xff8c42 : 0xffd23f);
+        if (f.status.slow > 0 && Math.random() < 0.5) this.effects.puff(p, 0xbfeaff);
+      }
+    }
     this.effects.update(dt);
     ([0, 1] as const).forEach((side) => {
       const b = this.bubbles[side];
@@ -158,6 +178,26 @@ export class GameRenderer {
     }
     this.camera.lookAt(this.camLook);
     this.renderer.render(this.scene, this.camera);
+  }
+
+  private syncDarts(m: MatchState) {
+    const alive = new Set<number>();
+    for (const p of m.projectiles) {
+      alive.add(p.id);
+      let mesh = this.darts.get(p.id);
+      if (!mesh) {
+        mesh = new THREE.Mesh(this.dartGeo, this.dartMat);
+        this.scene.add(mesh);
+        this.darts.set(p.id, mesh);
+      }
+      mesh.position.set(p.pos.x, 1.3, p.pos.z);
+      mesh.rotation.y = Math.atan2(p.dir.x, p.dir.z);
+    }
+    for (const [id, mesh] of this.darts) {
+      if (alive.has(id)) continue;
+      this.scene.remove(mesh);
+      this.darts.delete(id);
+    }
   }
 
   /** Screen position (CSS pixels) above a fighter's head, or null if off-screen. */

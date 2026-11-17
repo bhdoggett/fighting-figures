@@ -41,6 +41,26 @@ The camera stays locked on: you always face your opponent. No mouse needed.
 | Robo-Bonk (rank-up prize) | 2 | 4 | 4 | 30 s charge, 75% damage |
 | Grumpy Wizard (rank-up prize) | 2 | 5 | 3 | 42 s charge, instant KO |
 
+## Shop
+
+Every level-up earns **Figure Coins** (40 each), with a 300-coin bonus at level 10 and level 20. Spend them in the **Shop** on the main screen on items you can't win as prizes:
+
+| Item | Coins | Good | Catch |
+|---|---|---|---|
+| Leather Vest | 75 | +10 health | 3% slower |
+| Mace | 150 | Big, dizzying hits | Slow swing |
+| Chainmail | 200 | +25 health | 8% slower |
+| Poison Darts | 350 | Quick hit throws a poison dart | Weak up close; ducking dodges darts |
+| Knight Plate | 450 | +45 health | 15% slower |
+| Flaming Sword | 500 | Hits set foes on fire | A bit slower than a sword |
+| Frost Hammer | 750 | Huge hits that freeze foes slow | Very slow swing |
+| Dragon Scale | 900 | +50 health | 5% slower |
+| Thunder Spear | 1000 | Long reach; every 3rd hit zaps | Costs the most |
+
+Bots wear armor from level 8 and sometimes bring shop weapons from level 16, so fights stay fair.
+
+When running `npm run dev`, the shop has a **+1000 coins (dev only)** button for testing. It isn't in the real build.
+
 ## Saving
 
 Progress saves in the browser automatically. Use **Save code** on the main screen to copy a backup code, and **Load code** to restore it (for example, in another browser).

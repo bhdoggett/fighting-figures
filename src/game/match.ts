@@ -19,7 +19,7 @@ const SPAWNS: Vec2[] = [
 export type Side = 0 | 1;
 
 export type MatchEvent =
-  | { id: number; type: 'hit'; who: Side; target: Side; damage: number; at: Vec2; big: boolean }
+  | { id: number; type: 'hit'; who: Side; target: Side; damage: number; at: Vec2; big: boolean; zap?: boolean }
   | { id: number; type: 'ko'; who: Side; target: Side; at: Vec2; super: boolean }
   | { id: number; type: 'super'; who: Side; at: Vec2 }
   | { id: number; type: 'power'; who: Side; at: Vec2 }
@@ -171,7 +171,7 @@ export function stepMatch(m: MatchState, intents: [Intent, Intent], dt: number =
     } else {
       const big = hit.kind === 'power' || hit.kind === 'super';
       if (hit.kind === 'super') m.supersLanded[who] += 1;
-      emit(m, { type: 'hit', who, target, damage: hit.damage, at: hit.at, big });
+      emit(m, { type: 'hit', who, target, damage: hit.damage, at: hit.at, big, zap: hit.zap });
       if (m.rng() < 0.35) say(m, target, 'hit');
     }
   }

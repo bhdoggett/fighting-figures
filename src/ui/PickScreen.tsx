@@ -6,6 +6,7 @@ import { getPersonality } from '../game/data/personalities';
 import { FAMILY_TRADEOFFS, getWeapon } from '../game/data/weapons';
 import { COSMETICS, getCosmetic } from '../game/data/cosmetics';
 import { MAX_LEVEL } from '../game/data/ranks';
+import { ARMOR, getArmor } from '../game/data/shop';
 import type { CosmeticSlot } from '../game/types';
 import { PreviewRenderer } from '../render/preview';
 import { PREVIEW_MOVES, previewCaption, type PreviewMove } from '../render/previewMoves';
@@ -18,6 +19,7 @@ interface Props {
   profile: Profile;
   onChange: (p: Profile) => void;
   onFight: () => void;
+  onShop: () => void;
   touch: boolean;
   leftie: boolean;
   onLeftie: (leftie: boolean) => void;
@@ -72,7 +74,7 @@ function Cycler({ label, value, sub, onPrev, onNext, count }: { label: string; v
   );
 }
 
-export function PickScreen({ profile, onChange, onFight, touch, leftie, onLeftie }: Props) {
+export function PickScreen({ profile, onChange, onFight, onShop, touch, leftie, onLeftie }: Props) {
   const previewHostRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<PreviewRenderer | null>(null);
   const [saveMode, setSaveMode] = useState<'none' | 'export' | 'import'>('none');
@@ -177,6 +179,8 @@ export function PickScreen({ profile, onChange, onFight, touch, leftie, onLeftie
   const skins = ownedSlot('skin');
   const hats: (string | undefined)[] = [undefined, ...ownedSlot('hat')];
   const capes: (string | undefined)[] = [undefined, ...ownedSlot('cape')];
+  const armors: (string | undefined)[] = [undefined, ...ARMOR.filter((a) => owned.armor.includes(a.id)).map((a) => a.id)];
+  const armor = getArmor(loadout.armor);
 
   const xpNeed = xpToNext(profile.level);
   const xpPct = profile.level >= MAX_LEVEL ? 100 : Math.round((profile.xp / xpNeed) * 100);
@@ -253,6 +257,14 @@ export function PickScreen({ profile, onChange, onFight, touch, leftie, onLeftie
             onNext={() => setLoadout({ weapon: cycle(owned.weapons, loadout.weapon, 1) })}
           />
           <Cycler
+            label="Armor"
+            value={armor?.name ?? 'No armor'}
+            sub={armor ? `+${armor.hp} health · ${Math.round(armor.slow * 100)}% slower` : armors.length < 2 ? 'Buy armor in the Shop!' : undefined}
+            count={armors.length}
+            onPrev={() => setLoadout({ armor: cycle(armors, loadout.armor, -1) })}
+            onNext={() => setLoadout({ armor: cycle(armors, loadout.armor, 1) })}
+          />
+          <Cycler
             label="Skin"
             value={getCosmetic(loadout.skin)?.name ?? 'Blue Buddy'}
             count={skins.length}
@@ -280,6 +292,10 @@ export function PickScreen({ profile, onChange, onFight, touch, leftie, onLeftie
         <div className={styles.side}>
         <button className={`${shared.big} ${styles.fight}`} onClick={onFight}>
           FIGHT!
+        </button>
+        <button className={styles.shopButton} onClick={onShop}>
+          <span className={styles.coinIcon} aria-hidden="true" />
+          Shop · {profile.coins} coins
         </button>
         {touch ? (
         <section className={`${shared.panel} ${styles.controls}`}>

@@ -4,6 +4,7 @@ import type { Loadout, PersonalityId } from '../game/types';
 import { getPersonality } from '../game/data/personalities';
 import { getWeapon } from '../game/data/weapons';
 import { getCosmetic } from '../game/data/cosmetics';
+import { getArmor } from '../game/data/shop';
 
 const WOOD = 0x8a5a2b;
 
@@ -137,6 +138,93 @@ function buildWeapon(weaponId: string): THREE.Group {
       tip.rotation.y = Math.PI / 4;
       g.add(tip);
       break;
+    }
+    case 'mace': {
+      const h = box(0.1, 0.8, 0.1, handle);
+      h.position.y = 0.3;
+      g.add(h);
+      const head = box(0.4, 0.4, 0.4, blade);
+      head.position.y = 0.8;
+      g.add(head);
+      for (const [x, y, z] of [[0.24, 0.8, 0], [-0.24, 0.8, 0], [0, 0.8, 0.24], [0, 0.8, -0.24], [0, 1.04, 0]]) {
+        const spike = box(0.1, 0.1, 0.1, mat(0x5a5a66));
+        spike.position.set(x, y, z);
+        g.add(spike);
+      }
+      break;
+    }
+    case 'darts': {
+      // A little pouch of darts; one held ready to throw.
+      g.add(box(0.06, 0.18, 0.06, handle));
+      const b = box(0.05, 0.3, 0.05, blade);
+      b.position.y = 0.22;
+      g.add(b);
+      const fin = box(0.14, 0.08, 0.02, mat(0xff4d6d));
+      fin.position.y = -0.06;
+      g.add(fin);
+      break;
+    }
+    case 'flamesword': {
+      g.add(box(0.1, 0.3, 0.1, handle));
+      const guard = box(0.35, 0.08, 0.12, mat(0x7a1f1f));
+      guard.position.y = 0.18;
+      g.add(guard);
+      const b = box(0.16, 0.95, 0.06, new THREE.MeshLambertMaterial({ color: w.color, emissive: 0xff3300, emissiveIntensity: 0.8 }));
+      b.position.y = 0.68;
+      g.add(b);
+      const flame = box(0.24, 0.5, 0.12, new THREE.MeshBasicMaterial({ color: 0xffb703, transparent: true, opacity: 0.55 }));
+      flame.position.y = 0.85;
+      flame.userData.flicker = true;
+      g.add(flame);
+      break;
+    }
+    case 'frosthammer': {
+      const h = box(0.1, 1.0, 0.1, mat(0x5a7a9a));
+      h.position.y = 0.35;
+      g.add(h);
+      const head = box(0.62, 0.4, 0.4, new THREE.MeshLambertMaterial({ color: w.color, emissive: 0x2aa9ff, emissiveIntensity: 0.4 }));
+      head.position.y = 0.95;
+      g.add(head);
+      break;
+    }
+    case 'thunderspear': {
+      const sh = box(0.08, 2.1, 0.08, mat(0x3a3a55));
+      sh.position.y = 0.65;
+      g.add(sh);
+      const tip = box(0.2, 0.4, 0.08, new THREE.MeshLambertMaterial({ color: w.color, emissive: 0xffe14d, emissiveIntensity: 0.6 }));
+      tip.position.y = 1.85;
+      tip.rotation.z = 0.3;
+      g.add(tip);
+      const bolt = box(0.12, 0.3, 0.06, new THREE.MeshLambertMaterial({ color: w.color, emissive: 0xffe14d, emissiveIntensity: 0.6 }));
+      bolt.position.set(0.06, 1.6, 0);
+      bolt.rotation.z = -0.4;
+      g.add(bolt);
+      break;
+    }
+  }
+  return g;
+}
+
+function buildArmor(armorId: string | undefined): THREE.Group | null {
+  const a = getArmor(armorId);
+  if (!a) return null;
+  const g = new THREE.Group();
+  const m = new THREE.MeshLambertMaterial({ color: a.color });
+  const chest = box(0.56, 0.6, 0.34, m);
+  chest.position.y = 1.18;
+  g.add(chest);
+  if (a.id !== 'armor-leather') {
+    for (const x of [-0.36, 0.36]) {
+      const pad = box(0.3, 0.16, 0.32, m);
+      pad.position.set(x, 1.5, 0);
+      g.add(pad);
+    }
+  }
+  if (a.id === 'armor-dragon') {
+    for (let i = 0; i < 3; i++) {
+      const scale = box(0.12, 0.08, 0.04, new THREE.MeshLambertMaterial({ color: 0x1b8a57 }));
+      scale.position.set(-0.15 + i * 0.15, 1.2, 0.18);
+      g.add(scale);
     }
   }
   return g;
@@ -304,6 +392,9 @@ export class FighterModel {
       this.head.add(hat);
     }
 
+    const armorMesh = buildArmor(loadout.armor);
+    if (armorMesh) this.body.add(armorMesh);
+
     const capeInfo = getCosmetic(loadout.cape);
     if (capeInfo) {
       const capeGeo = new THREE.BoxGeometry(0.5, 1.0, 0.04);
@@ -443,7 +534,25 @@ export class FighterModel {
 
     // Flash white when hit; glow when super is ready.
     const flash = f.action === 'hitstun' ? 1 - p : 0;
-    for (const m of this.materials) m.emissive.setRGB(flash, flash, flash);
+    // Status tints: orange flicker when burning, green when poisoned, icy blue when slowed.
+    const st = f.status;
+    let r = flash;
+    let gr = flash;
+    let bl = flash;
+    if (st.burn > 0) {
+      const k = 0.35 + Math.sin(time * 25) * 0.15;
+      r += k;
+      gr += k * 0.35;
+    }
+    if (st.poison > 0) gr += 0.3 + Math.sin(time * 8) * 0.1;
+    if (st.slow > 0) {
+      bl += 0.4;
+      gr += 0.2;
+    }
+    for (const m of this.materials) m.emissive.setRGB(r, gr, bl);
+    this.root.traverse((o) => {
+      if (o.userData.flicker) o.scale.y = 0.8 + Math.sin(time * 30) * 0.25;
+    });
     // Weapon glows red during a power move so it's easy to see coming.
     const glow = f.action === 'power' ? 0.6 + Math.sin(time * 30) * 0.3 : 0;
     for (const m of this.weaponMaterials) m.emissive.setRGB(glow, 0, 0);

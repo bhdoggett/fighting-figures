@@ -4,6 +4,7 @@ import { getWeapon } from '../game/data/weapons';
 import { getCosmetic } from '../game/data/cosmetics';
 import { getPersonality } from '../game/data/personalities';
 import type { PersonalityId } from '../game/types';
+import { getArmor } from '../game/data/shop';
 import styles from './PrizeIcon.module.css';
 
 const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
@@ -39,7 +40,50 @@ function drawWeapon(px: Px, id: string) {
       px(11, 1, 4, 4, c);
       px(12, 0, 2, 2, c);
       break;
+    case 'mace':
+      for (let i = 0; i < 7; i++) px(2 + i, 13 - i, 2, 2, WOOD);
+      px(8, 2, 6, 6, c);
+      px(10, 0, 2, 2, '#5a5a66');
+      px(14, 4, 2, 2, '#5a5a66');
+      px(6, 4, 2, 2, '#5a5a66');
+      px(10, 8, 2, 2, '#5a5a66');
+      break;
+    case 'darts':
+      for (const [x, y] of [[2, 10], [6, 8], [10, 6]]) {
+        px(x, y, 4, 1, c);
+        px(x + 4, y, 1, 1, '#ffffff');
+        px(x - 1, y - 1, 1, 3, '#ff4d6d');
+      }
+      break;
+    case 'flamesword':
+      for (let i = 0; i < 9; i++) px(4 + i, 11 - i, 2, 2, c);
+      for (let i = 0; i < 9; i += 2) px(5 + i, 9 - i, 2, 2, '#ffd23f');
+      px(3, 9, 5, 2, '#7a1f1f');
+      px(1, 13, 2, 2, WOOD);
+      break;
+    case 'frosthammer':
+      for (let i = 0; i < 9; i++) px(3 + i, 13 - i, 2, 2, '#5a7a9a');
+      px(8, 1, 7, 5, c);
+      px(9, 2, 2, 1, '#ffffff');
+      break;
+    case 'thunderspear':
+      for (let i = 0; i < 11; i++) px(1 + i, 14 - i, 2, 2, '#3a3a55');
+      px(11, 0, 3, 2, c);
+      px(12, 2, 3, 2, c);
+      px(11, 4, 3, 2, c);
+      break;
   }
+}
+
+function drawArmor(px: Px, id: string) {
+  const a = getArmor(id);
+  if (!a) return;
+  const c = hex(a.color);
+  px(3, 3, 10, 11, c);
+  px(1, 3, 3, 4, c);
+  px(12, 3, 3, 4, c);
+  px(6, 3, 4, 2, '#fffaf0');
+  px(3, 13, 10, 1, '#1d1b2f');
 }
 
 function drawFigure(px: Px, body: string) {
@@ -124,6 +168,23 @@ function drawPrize(g: CanvasRenderingContext2D, prize: Prize) {
       px(3, 6, 10, 3, color);
       px(10, 8, 5, 1, color);
   }
+}
+
+/** Pixel icon for a shop item (armor or weapon). */
+export function ItemIcon({ kind, id }: { kind: 'armor' | 'weapon'; id: string }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const g = ref.current?.getContext('2d');
+    if (!g) return;
+    const px: Px = (x, y, w, h, c) => {
+      g.fillStyle = c;
+      g.fillRect(x, y, w, h);
+    };
+    g.clearRect(0, 0, 16, 16);
+    if (kind === 'armor') drawArmor(px, id);
+    else drawWeapon(px, id);
+  }, [kind, id]);
+  return <canvas ref={ref} width={16} height={16} className={styles.icon} aria-hidden="true" />;
 }
 
 export function PrizeIcon({ prize }: { prize: Prize }) {
