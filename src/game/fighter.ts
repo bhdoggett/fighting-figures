@@ -1,4 +1,4 @@
-import type { Personality, Weapon } from './types';
+import type { Armor, Personality, Weapon } from './types';
 
 export interface Vec2 {
   x: number;
@@ -47,6 +47,11 @@ export interface FighterState {
   moveSpeed: number;
   personality: Personality;
   weapon: Weapon;
+  armor?: Armor;
+  /** Lingering effects from shop weapons, in seconds left. */
+  status: { burn: number; poison: number; slow: number; from: 'p1' | 'p2' | null };
+  /** Thunder Spear: hits landed, every third one zaps. */
+  zapCount: number;
 }
 
 export interface HitEvent {
@@ -56,6 +61,7 @@ export interface HitEvent {
   kind: Action;
   ko: boolean;
   at: Vec2;
+  zap?: boolean;
 }
 
 export const TUNING = {
@@ -84,14 +90,22 @@ export const TUNING = {
   respawnInvuln: 1.5,
   duckSpeedMul: 0.35,
   standUpDur: 0.2,
+  burnDps: 3,
+  burnDur: 3,
+  poisonDps: 2.5,
+  poisonDur: 4,
+  slowDur: 2,
+  slowMul: 0.6,
+  dizzyExtra: 0.15,
+  zapBonus: 8,
 };
 
 export function emptyIntent(): Intent {
   return { move: { x: 0, z: 0 }, facing: null, quick: false, power: false, dash: false, dodge: null, duck: false, super: false };
 }
 
-export function createFighter(id: 'p1' | 'p2', personality: Personality, weapon: Weapon, spawn: Vec2): FighterState {
-  const maxHp = 60 + 12 * personality.health;
+export function createFighter(id: 'p1' | 'p2', personality: Personality, weapon: Weapon, spawn: Vec2, armor?: Armor): FighterState {
+  const maxHp = 60 + 12 * personality.health + (armor?.hp ?? 0);
   return {
     id,
     pos: { ...spawn },
@@ -111,9 +125,12 @@ export function createFighter(id: 'p1' | 'p2', personality: Personality, weapon:
     koTimer: 0,
     comboHits: 0,
     comboT: 0,
-    moveSpeed: 3 + 0.6 * personality.speed,
+    moveSpeed: (3 + 0.6 * personality.speed) * (1 - (armor?.slow ?? 0)),
     personality,
     weapon,
+    armor,
+    status: { burn: 0, poison: 0, slow: 0, from: null },
+    zapCount: 0,
   };
 }
 
@@ -142,6 +159,7 @@ export function stepFighter(f: FighterState, intent: Intent, dt: number): Fighte
   f.invulnT = Math.max(0, f.invulnT - dt);
   f.comboT = Math.max(0, f.comboT - dt);
   f.standUpT = Math.max(0, f.standUpT - dt);
+  f.status.slow = Math.max(0, f.status.slow - dt);
   if (f.comboT <= 0) f.comboHits = 0;
 
   if (f.action === 'ko') {
@@ -208,7 +226,7 @@ export function stepFighter(f: FighterState, intent: Intent, dt: number): Fighte
     const len = Math.hypot(intent.move.x, intent.move.z);
     if (len > 0.01) {
       const m = Math.min(1, len);
-      const speed = f.moveSpeed * (f.ducking ? TUNING.duckSpeedMul : 1) * m;
+      const speed = f.moveSpeed * (f.ducking ? TUNING.duckSpeedMul : 1) * (f.status.slow > 0 ? TUNING.slowMul : 1) * m;
       f.pos.x += (intent.move.x / len) * speed * dt;
       f.pos.z += (intent.move.z / len) * speed * dt;
       if (intent.facing === null) f.facing = Math.atan2(intent.move.x, intent.move.z);
@@ -264,6 +282,8 @@ export function attackShape(f: FighterState): AttackShape | null {
   const mul = powerMul(f);
   switch (f.action) {
     case 'quick':
+      // Thrown weapons (darts) hit with a flying projectile instead; the match spawns it.
+      if (f.weapon.ranged) return null;
       return { range: reach + 0.5, arc: deg(60), windows: [[0.33, 0.66]], damage: () => TUNING.quickDamage * mul, duckable: true };
     case 'dash':
       return { range: reach + 0.4, arc: deg(60), windows: [[0, 1]], damage: () => TUNING.dashDamage * mul, duckable: false };
@@ -343,7 +363,24 @@ function applyHit(h: PendingHit): HitEvent | null {
   const { attacker: a, target: b } = h;
   a.hitsLanded = h.windowIdx + 1;
   if (h.damage === null || b.action === 'ko') return null;
-  const damage = Math.min(b.hp, h.damage);
+  const nx = h.dist > 0.01 ? h.dx / h.dist : 0;
+  const nz = h.dist > 0.01 ? h.dz / h.dist : 1;
+  return landHit(a, b, h.damage, h.kind, nx, nz);
+}
+
+/** Apply a hit that connected: damage, reactions, and the attacker's weapon effect. */
+export function landHit(a: FighterState, b: FighterState, rawDamage: number, kind: Action, nx: number, nz: number): HitEvent | null {
+  if (b.action === 'ko') return null;
+  let zap = false;
+  let dealt = rawDamage;
+  if (a.weapon.effect === 'zap' && kind !== 'super') {
+    a.zapCount += 1;
+    if (a.zapCount % 3 === 0) {
+      dealt += TUNING.zapBonus;
+      zap = true;
+    }
+  }
+  const damage = Math.min(b.hp, dealt);
   b.hp = Math.max(0, b.hp - damage);
   const ko = b.hp <= 0;
   if (ko) {
@@ -351,8 +388,19 @@ function applyHit(h: PendingHit): HitEvent | null {
     b.actionT = 0;
     b.push = { x: 0, z: 0 };
   } else {
-    const nx = h.dist > 0.01 ? h.dx / h.dist : 0;
-    const nz = h.dist > 0.01 ? h.dz / h.dist : 1;
+    switch (a.weapon.effect) {
+      case 'burn':
+        b.status.burn = TUNING.burnDur;
+        b.status.from = a.id;
+        break;
+      case 'poison':
+        b.status.poison = TUNING.poisonDur;
+        b.status.from = a.id;
+        break;
+      case 'slow':
+        b.status.slow = TUNING.slowDur;
+        break;
+    }
     b.comboHits += 1;
     b.comboT = TUNING.comboWindow;
     const attacking = b.action === 'quick' || b.action === 'power' || b.action === 'dash';
@@ -364,16 +412,21 @@ function applyHit(h: PendingHit): HitEvent | null {
       b.invulnT = Math.max(b.invulnT, TUNING.comboBreakInvuln);
     } else if (b.action === 'super') {
       // Supers can't be interrupted, so a charged super is never wasted by a poke.
-    } else if (h.kind === 'quick' && attacking) {
+    } else if (kind === 'quick' && attacking) {
       // Quick hits don't cancel an attack that's already swinging.
     } else {
-      const stun = h.kind === 'quick' ? TUNING.quickStunDur : TUNING.hitstunDur;
+      const stun = (kind === 'quick' ? TUNING.quickStunDur : TUNING.hitstunDur) + (a.weapon.effect === 'dizzy' ? TUNING.dizzyExtra : 0);
       startAction(b, 'hitstun', stun);
-      const kb = h.kind === 'quick' ? TUNING.knockback * 0.6 : TUNING.knockback;
+      const kb = kind === 'quick' ? TUNING.knockback * 0.6 : TUNING.knockback;
       b.push = { x: nx * kb, z: nz * kb };
     }
   }
-  return { attacker: a.id, target: b.id, damage, kind: h.kind, ko, at: { x: b.pos.x, z: b.pos.z } };
+  return { attacker: a.id, target: b.id, damage, kind, ko, at: { x: b.pos.x, z: b.pos.z }, zap };
+}
+
+/** Damage of a quick hit from this fighter (used for thrown darts). */
+export function quickDamage(f: FighterState): number {
+  return TUNING.quickDamage * powerMul(f);
 }
 
 /** Check both fighters' attacks against each other. Both are checked before either applies, so trades are fair. */

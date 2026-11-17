@@ -3,7 +3,8 @@ import { PERSONALITIES } from './data/personalities';
 import { FAMILIES, TIERS } from './data/weapons';
 import { COSMETICS } from './data/cosmetics';
 import { maxTierForLevel } from './progression';
-import type { Loadout, PersonalityId, WeaponFamily } from './types';
+import { SHOP_WEAPONS } from './data/shop';
+import type { Loadout, PersonalityId, BasicFamily } from './types';
 
 export interface BotBrain {
   think: number;
@@ -109,17 +110,21 @@ export function botIntent(brain: BotBrain, self: FighterState, foe: FighterState
 
 export function botLoadoutForLevel(level: number, rng: () => number): Loadout {
   const personalities = Object.keys(PERSONALITIES) as PersonalityId[];
-  const families = Object.keys(FAMILIES) as WeaponFamily[];
+  const families = Object.keys(FAMILIES) as BasicFamily[];
   const tier = TIERS[maxTierForLevel(level)];
   const skins = COSMETICS.filter((c) => c.slot === 'skin');
   const hats = COSMETICS.filter((c) => c.slot === 'hat');
   const capes = COSMETICS.filter((c) => c.slot === 'cape');
   const pick = <T,>(a: T[]) => a[Math.floor(rng() * a.length) % a.length];
+  // Bots gear up like players do, so the shop never makes fights too easy.
+  const armor = level >= 20 ? 'armor-plate' : level >= 14 ? 'armor-chain' : level >= 8 ? 'armor-leather' : undefined;
+  const shopWeapon = level >= 16 && rng() < 0.3 ? pick(Object.keys(SHOP_WEAPONS)) : undefined;
   return {
     personality: pick(personalities),
-    weapon: `${pick(families)}-${tier}`,
+    weapon: shopWeapon ?? `${pick(families)}-${tier}`,
     skin: pick(skins).id,
     hat: level >= 5 ? pick(hats).id : undefined,
     cape: level >= 10 ? pick(capes).id : undefined,
+    armor,
   };
 }

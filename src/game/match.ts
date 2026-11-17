@@ -1,4 +1,5 @@
-import { createFighter, resolveAttacks, separate, stepFighter, TUNING, type FighterState, type Intent, type Vec2 } from './fighter';
+import { attackShape, createFighter, landHit, quickDamage, resolveAttacks, separate, stepFighter, TUNING, type FighterState, type HitEvent, type Intent, type Vec2 } from './fighter';
+import { getArmor } from './data/shop';
 import { getPersonality } from './data/personalities';
 import { getWeapon } from './data/weapons';
 import type { Loadout } from './types';
@@ -25,6 +26,20 @@ export type MatchEvent =
   | { id: number; type: 'line'; who: Side; text: string }
   | { id: number; type: 'respawn'; who: Side; at: Vec2 };
 
+/** A thrown poison dart in flight. */
+export interface Projectile {
+  id: number;
+  owner: Side;
+  pos: Vec2;
+  dir: Vec2;
+  life: number;
+  damage: number;
+}
+
+const DART_SPEED = 20;
+const DART_LIFE = 0.55;
+const DART_HIT_RADIUS = 0.6;
+
 type NewEvent = MatchEvent extends infer E ? (E extends MatchEvent ? Omit<E, 'id'> : never) : never;
 
 export interface MatchState {
@@ -40,13 +55,15 @@ export interface MatchState {
   accumulator: number;
   /** Fighter positions before the latest step, for smooth drawing between steps. */
   prevPos: [Vec2, Vec2];
+  projectiles: Projectile[];
+  nextProjectileId: number;
   lineCooldown: [number, number];
   rng: () => number;
 }
 
 export function createMatch(p1: Loadout, p2: Loadout, duration = 180, rng: () => number = Math.random): MatchState {
-  const f1 = createFighter('p1', getPersonality(p1.personality), getWeapon(p1.weapon), SPAWNS[0]);
-  const f2 = createFighter('p2', getPersonality(p2.personality), getWeapon(p2.weapon), SPAWNS[1]);
+  const f1 = createFighter('p1', getPersonality(p1.personality), getWeapon(p1.weapon), SPAWNS[0], getArmor(p1.armor));
+  const f2 = createFighter('p2', getPersonality(p2.personality), getWeapon(p2.weapon), SPAWNS[1], getArmor(p2.armor));
   return {
     time: duration,
     duration,
@@ -59,6 +76,8 @@ export function createMatch(p1: Loadout, p2: Loadout, duration = 180, rng: () =>
     over: false,
     accumulator: 0,
     prevPos: [{ ...f1.pos }, { ...f2.pos }],
+    projectiles: [],
+    nextProjectileId: 1,
     lineCooldown: [0, 0],
     rng,
   };
@@ -104,6 +123,7 @@ function respawn(m: MatchState, side: Side) {
   f.actionT = 0;
   f.push = { x: 0, z: 0 };
   f.invulnT = TUNING.respawnInvuln;
+  f.status = { burn: 0, poison: 0, slow: 0, from: null };
   f.facing = Math.atan2(other.pos.x - f.pos.x, other.pos.z - f.pos.z);
   emit(m, { type: 'respawn', who: side, at: { ...f.pos } });
 }
@@ -134,7 +154,11 @@ export function stepMatch(m: MatchState, intents: [Intent, Intent], dt: number =
     }
   });
 
-  for (const hit of resolveAttacks(a, b)) {
+  spawnDarts(m);
+  const hits = [...resolveAttacks(a, b), ...moveDarts(m, dt)];
+  tickBurnAndPoison(m, dt);
+
+  for (const hit of hits) {
     const who: Side = hit.attacker === 'p1' ? 0 : 1;
     const target: Side = who === 0 ? 1 : 0;
     if (hit.ko) {
@@ -195,4 +219,65 @@ export function drawPosition(m: MatchState, side: Side): Vec2 {
   if (Math.hypot(cur.x - prev.x, cur.z - prev.z) > SNAP_DISTANCE) return { ...cur };
   const t = Math.min(1, Math.max(0, m.accumulator / FIXED_DT));
   return { x: prev.x + (cur.x - prev.x) * t, z: prev.z + (cur.z - prev.z) * t };
+}
+
+/** Throw a dart when a darts fighter's quick attack reaches its release point. */
+function spawnDarts(m: MatchState) {
+  ([0, 1] as Side[]).forEach((side) => {
+    const f = m.fighters[side];
+    if (!f.weapon.ranged || f.action !== 'quick' || f.hitsLanded > 0 || attackShape(f)) return;
+    if (f.actionT < f.actionDur * 0.33) return;
+    f.hitsLanded = 1;
+    const dir = { x: Math.sin(f.facing), z: Math.cos(f.facing) };
+    m.projectiles.push({
+      id: m.nextProjectileId++,
+      owner: side,
+      pos: { x: f.pos.x + dir.x * 0.5, z: f.pos.z + dir.z * 0.5 },
+      dir,
+      life: DART_LIFE,
+      damage: quickDamage(f),
+    });
+  });
+}
+
+/** Fly darts forward and hit whoever they reach (ducking fighters let them fly over). */
+function moveDarts(m: MatchState, dt: number): HitEvent[] {
+  const events: HitEvent[] = [];
+  m.projectiles = m.projectiles.filter((p) => {
+    p.life -= dt;
+    p.pos.x += p.dir.x * DART_SPEED * dt;
+    p.pos.z += p.dir.z * DART_SPEED * dt;
+    const shooter = m.fighters[p.owner];
+    const target = m.fighters[p.owner === 0 ? 1 : 0];
+    if (target.action !== 'ko' && Math.hypot(target.pos.x - p.pos.x, target.pos.z - p.pos.z) < DART_HIT_RADIUS) {
+      if (target.invulnT > 0 || target.ducking) return p.life > 0;
+      const e = landHit(shooter, target, p.damage, 'quick', p.dir.x, p.dir.z);
+      if (e) events.push(e);
+      return false;
+    }
+    return p.life > 0 && Math.abs(p.pos.x) < ARENA_HALF && Math.abs(p.pos.z) < ARENA_HALF;
+  });
+  return events;
+}
+
+/** Fire and poison keep hurting for a few seconds. A KO from them counts for whoever caused it. */
+function tickBurnAndPoison(m: MatchState, dt: number) {
+  ([0, 1] as Side[]).forEach((side) => {
+    const f = m.fighters[side];
+    const st = f.status;
+    if (f.action === 'ko' || (st.burn <= 0 && st.poison <= 0)) return;
+    const dps = (st.burn > 0 ? TUNING.burnDps : 0) + (st.poison > 0 ? TUNING.poisonDps : 0);
+    st.burn = Math.max(0, st.burn - dt);
+    st.poison = Math.max(0, st.poison - dt);
+    f.hp = Math.max(0, f.hp - dps * dt);
+    if (f.hp > 0) return;
+    f.action = 'ko';
+    f.actionT = 0;
+    f.push = { x: 0, z: 0 };
+    f.koTimer = RESPAWN_SEC;
+    const who: Side = st.from === 'p1' ? 0 : st.from === 'p2' ? 1 : side === 0 ? 1 : 0;
+    m.kos[who] += 1;
+    emit(m, { type: 'ko', who, target: side, at: { ...f.pos }, super: false });
+    say(m, who, 'ko', true);
+  });
 }

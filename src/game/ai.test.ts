@@ -54,4 +54,15 @@ describe('ai', () => {
     expect(low.weapon).toMatch(/-wood$/);
     expect(high.weapon).not.toMatch(/-wood$/);
   });
+
+  it('bot wears armor from level 8 and sometimes brings a shop weapon later', () => {
+    expect(botLoadoutForLevel(5, mulberry(4)).armor).toBeUndefined();
+    expect(botLoadoutForLevel(8, mulberry(4)).armor).toBe('armor-leather');
+    expect(botLoadoutForLevel(22, mulberry(4)).armor).toBe('armor-plate');
+    let shop = 0;
+    for (let i = 0; i < 40; i++) if (botLoadoutForLevel(20, mulberry(i)).weapon.startsWith('shop-')) shop++;
+    expect(shop).toBeGreaterThan(0);
+    expect(shop).toBeLessThan(40);
+    for (let i = 0; i < 20; i++) expect(botLoadoutForLevel(10, mulberry(i)).weapon.startsWith('shop-')).toBe(false);
+  });
 });
