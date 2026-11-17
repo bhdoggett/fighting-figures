@@ -3,6 +3,7 @@ import { LOCKED_PERSONALITIES, PERSONALITIES, STARTER_PERSONALITIES } from './da
 import { TIERS, WEAPONS, FAMILY_TRADEOFFS, tierIndex } from './data/weapons';
 import { COSMETICS } from './data/cosmetics';
 import { MAX_LEVEL, isRankUpLevel } from './data/ranks';
+import { getShopItem } from './data/shop';
 
 export interface Profile {
   version: 1;
@@ -13,7 +14,9 @@ export interface Profile {
   wins: number;
   /** Levels whose prize hasn't been picked yet (survives closing the tab). */
   pendingPrizes: number[];
-  owned: { weapons: string[]; cosmetics: string[]; personalities: PersonalityId[] };
+  /** Figure Coins, spent in the shop. */
+  coins: number;
+  owned: { weapons: string[]; cosmetics: string[]; personalities: PersonalityId[]; armor: string[] };
   loadout: Loadout;
 }
 
@@ -42,14 +45,20 @@ export function newProfile(): Profile {
     battles: 0,
     wins: 0,
     pendingPrizes: [],
+    coins: 0,
     owned: {
       weapons: ['sword-wood'],
       cosmetics: ['skin-blue'],
       personalities: [...STARTER_PERSONALITIES],
+      armor: [],
     },
     loadout: { personality: 'hothead', weapon: 'sword-wood', skin: 'skin-blue' },
   };
 }
+
+export const COINS_PER_LEVEL = 40;
+export const COIN_BONUS_LEVELS = [10, 20];
+export const COIN_BONUS = 300;
 
 export const XP = { battle: 40, win: 60, draw: 25, perKo: 8, perSuper: 10 } as const;
 
@@ -137,6 +146,7 @@ export function claimPrize(p: Profile, prize: Prize): Profile {
     weapons: [...p.owned.weapons],
     cosmetics: [...p.owned.cosmetics],
     personalities: [...p.owned.personalities],
+    armor: [...p.owned.armor],
   };
   let trophies = p.trophies;
   const loadout = { ...p.loadout };
@@ -161,8 +171,31 @@ export function recordBattle(p: Profile, r: BattleResult): Profile {
 }
 
 /** Record a finished battle: stats, XP, levels, and a prize owed for each level gained. */
-export function finishBattle(p: Profile, r: BattleResult): { profile: Profile; levelsGained: number[]; xp: number } {
+export function finishBattle(p: Profile, r: BattleResult): { profile: Profile; levelsGained: number[]; xp: number; coins: number } {
   const xp = xpForBattle(r);
   const { profile, levelsGained } = applyXp(recordBattle(p, r), xp);
-  return { profile: { ...profile, pendingPrizes: [...profile.pendingPrizes, ...levelsGained] }, levelsGained, xp };
+  const coins = coinsForLevels(levelsGained);
+  return {
+    profile: { ...profile, coins: profile.coins + coins, pendingPrizes: [...profile.pendingPrizes, ...levelsGained] },
+    levelsGained,
+    xp,
+    coins,
+  };
+}
+
+/** Coins earned for reaching these levels: some each level, plus a bonus every two rank-ups. */
+export function coinsForLevels(levels: number[]): number {
+  return levels.reduce((sum, l) => sum + COINS_PER_LEVEL + (COIN_BONUS_LEVELS.includes(l) ? COIN_BONUS : 0), 0);
+}
+
+/** Buy a shop item and equip it. Returns null if it can't be bought. */
+export function buyItem(p: Profile, id: string): Profile | null {
+  const item = getShopItem(id);
+  if (!item || p.coins < item.price) return null;
+  const owned = item.kind === 'armor' ? p.owned.armor : p.owned.weapons;
+  if (owned.includes(id)) return null;
+  if (item.kind === 'armor') {
+    return { ...p, coins: p.coins - item.price, owned: { ...p.owned, armor: [...p.owned.armor, id] }, loadout: { ...p.loadout, armor: id } };
+  }
+  return { ...p, coins: p.coins - item.price, owned: { ...p.owned, weapons: [...p.owned.weapons, id] }, loadout: { ...p.loadout, weapon: id } };
 }

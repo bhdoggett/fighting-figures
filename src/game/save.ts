@@ -17,6 +17,7 @@ export function parseProfile(raw: unknown): Profile | null {
   const loadout = r.loadout as Record<string, unknown> | undefined;
   if (!owned || !loadout) return null;
   if (!isStringArray(owned.weapons) || !isStringArray(owned.cosmetics) || !isStringArray(owned.personalities)) return null;
+  const armor = isStringArray(owned.armor) ? owned.armor : [];
 
   const base = newProfile();
   const personalities = owned.personalities.filter((id) => id in PERSONALITIES) as Profile['owned']['personalities'];
@@ -27,6 +28,7 @@ export function parseProfile(raw: unknown): Profile | null {
     trophies: typeof r.trophies === 'number' ? r.trophies : 0,
     battles: typeof r.battles === 'number' ? r.battles : 0,
     wins: typeof r.wins === 'number' ? r.wins : 0,
+    coins: typeof r.coins === 'number' && r.coins >= 0 ? Math.floor(r.coins) : 0,
     pendingPrizes: Array.isArray(r.pendingPrizes)
       ? r.pendingPrizes.filter((n): n is number => typeof n === 'number' && n >= 2 && n <= 30).slice(0, 30)
       : [],
@@ -34,6 +36,7 @@ export function parseProfile(raw: unknown): Profile | null {
       weapons: owned.weapons.length ? owned.weapons : base.owned.weapons,
       cosmetics: owned.cosmetics.length ? owned.cosmetics : base.owned.cosmetics,
       personalities: personalities.length ? personalities : base.owned.personalities,
+      armor,
     },
     loadout: { ...base.loadout },
   };
@@ -46,6 +49,7 @@ export function parseProfile(raw: unknown): Profile | null {
   p.loadout.skin = pick(loadout.skin, p.owned.cosmetics, base.loadout.skin);
   if (typeof loadout.hat === 'string' && p.owned.cosmetics.includes(loadout.hat)) p.loadout.hat = loadout.hat;
   if (typeof loadout.cape === 'string' && p.owned.cosmetics.includes(loadout.cape)) p.loadout.cape = loadout.cape;
+  if (typeof loadout.armor === 'string' && p.owned.armor.includes(loadout.armor)) p.loadout.armor = loadout.armor;
   return p;
 }
 

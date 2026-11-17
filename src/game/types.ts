@@ -18,7 +18,12 @@ export interface Personality {
   color: number;
 }
 
-export type WeaponFamily = 'sword' | 'hammer' | 'daggers' | 'spear';
+export type BasicFamily = 'sword' | 'hammer' | 'daggers' | 'spear';
+export type ShopFamily = 'mace' | 'darts' | 'flamesword' | 'frosthammer' | 'thunderspear';
+export type WeaponFamily = BasicFamily | ShopFamily;
+
+/** Extra thing a shop weapon's hits do. */
+export type WeaponEffect = 'burn' | 'poison' | 'slow' | 'zap' | 'dizzy';
 export type Tier = 'wood' | 'stone' | 'iron' | 'gold' | 'diamond';
 
 export interface Weapon {
@@ -29,6 +34,20 @@ export interface Weapon {
   damageMul: number;
   swingTimeMul: number;
   reach: number;
+  color: number;
+  effect?: WeaponEffect;
+  /** Quick hits are thrown instead of swung. */
+  ranged?: boolean;
+}
+
+export interface Armor {
+  id: string;
+  name: string;
+  price: number;
+  /** Extra max health. */
+  hp: number;
+  /** Fraction of move speed lost (the catch). */
+  slow: number;
   color: number;
 }
 
@@ -49,6 +68,7 @@ export interface Loadout {
   skin: string;
   hat?: string;
   cape?: string;
+  armor?: string;
 }
 
 export interface Rank {

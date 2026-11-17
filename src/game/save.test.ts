@@ -61,4 +61,25 @@ describe('save', () => {
     expect(p.level).toBe(4);
     expect(p.pendingPrizes).toEqual([]);
   });
+  it('keeps coins and armor', () => {
+    const s = new MemStorage();
+    const p = newProfile();
+    p.coins = 321;
+    p.owned.armor = ['armor-chain'];
+    p.loadout.armor = 'armor-chain';
+    saveProfile(s, p);
+    const loaded = loadProfile(s);
+    expect(loaded.coins).toBe(321);
+    expect(loaded.loadout.armor).toBe('armor-chain');
+  });
+  it('old saves load with no coins and no armor', () => {
+    const s = new MemStorage();
+    const { coins: _c, ...rest } = newProfile();
+    void _c;
+    const old = { ...rest, owned: { weapons: ['sword-wood'], cosmetics: ['skin-blue'], personalities: ['hothead'] } };
+    s.setItem(SAVE_KEY, JSON.stringify(old));
+    const p = loadProfile(s);
+    expect(p.coins).toBe(0);
+    expect(p.owned.armor).toEqual([]);
+  });
 });

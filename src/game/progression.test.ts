@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyXp, claimPrize, finishBattle, newProfile, offerPrizes, xpForBattle, xpToNext } from './progression';
+import { applyXp, buyItem, claimPrize, coinsForLevels, finishBattle, newProfile, offerPrizes, xpForBattle, xpToNext } from './progression';
 import { MAX_LEVEL } from './data/ranks';
 import { WEAPONS } from './data/weapons';
 import { COSMETICS } from './data/cosmetics';
@@ -113,5 +113,39 @@ describe('pending prizes', () => {
     const prize = offerPrizes(p, 2, Math.random)[0];
     const next = claimPrize(p, prize);
     expect(next.pendingPrizes).toEqual([3]);
+  });
+});
+
+describe('figure coins', () => {
+  it('pays 40 per level and a 300 bonus at levels 10 and 20', () => {
+    expect(coinsForLevels([2])).toBe(40);
+    expect(coinsForLevels([2, 3])).toBe(80);
+    expect(coinsForLevels([10])).toBe(340);
+    expect(coinsForLevels([19, 20, 21])).toBe(420);
+  });
+
+  it('finishBattle adds coins for levels gained', () => {
+    const p = { ...newProfile(), xp: 95 };
+    const { profile, coins } = finishBattle(p, { won: true, draw: false, kos: 30, supersLanded: 0 });
+    expect(coins).toBe(80);
+    expect(profile.coins).toBe(80);
+  });
+
+  it('buys an item when you can afford it and equips it', () => {
+    const p = { ...newProfile(), coins: 100 };
+    const bought = buyItem(p, 'armor-leather');
+    expect(bought?.coins).toBe(25);
+    expect(bought?.owned.armor).toContain('armor-leather');
+    expect(bought?.loadout.armor).toBe('armor-leather');
+    const weapon = buyItem({ ...newProfile(), coins: 150 }, 'shop-mace');
+    expect(weapon?.owned.weapons).toContain('shop-mace');
+    expect(weapon?.loadout.weapon).toBe('shop-mace');
+  });
+
+  it('refuses when too poor or already owned', () => {
+    expect(buyItem({ ...newProfile(), coins: 10 }, 'armor-leather')).toBeNull();
+    const p = buyItem({ ...newProfile(), coins: 500 }, 'armor-leather')!;
+    expect(buyItem(p, 'armor-leather')).toBeNull();
+    expect(buyItem({ ...newProfile(), coins: 9999 }, 'not-a-thing')).toBeNull();
   });
 });

@@ -1,4 +1,5 @@
-import type { Tier, Weapon, WeaponFamily } from '../types';
+import type { BasicFamily, Tier, Weapon, WeaponFamily } from '../types';
+import { SHOP_WEAPONS } from './shop';
 
 export const TIERS: Tier[] = ['wood', 'stone', 'iron', 'gold', 'diamond'];
 
@@ -25,7 +26,7 @@ interface FamilyBase {
   reach: number;
 }
 
-export const FAMILIES: Record<WeaponFamily, FamilyBase> = {
+export const FAMILIES: Record<BasicFamily, FamilyBase> = {
   sword: { name: 'Sword', damageMul: 1, swingTimeMul: 1, reach: 1.6 },
   hammer: { name: 'Hammer', damageMul: 1.45, swingTimeMul: 1.5, reach: 1.7 },
   daggers: { name: 'Daggers', damageMul: 0.7, swingTimeMul: 0.6, reach: 1.1 },
@@ -37,11 +38,16 @@ export const FAMILY_TRADEOFFS: Record<WeaponFamily, { good: string; bad: string 
   hammer: { good: 'Big damage', bad: 'Slow swing' },
   daggers: { good: 'Very fast', bad: 'Short reach' },
   spear: { good: 'Long reach', bad: 'Less damage' },
+  mace: { good: 'Heavy, dizzying hits', bad: 'Slow swing' },
+  darts: { good: 'Throws poison darts', bad: 'Weak up close' },
+  flamesword: { good: 'Hits set foes on fire', bad: 'A bit slow' },
+  frosthammer: { good: 'Hits freeze foes slow', bad: 'Very slow swing' },
+  thunderspear: { good: 'Long reach, every 3rd hit zaps', bad: 'Pricey!' },
 };
 
 function build(): Record<string, Weapon> {
   const out: Record<string, Weapon> = {};
-  for (const family of Object.keys(FAMILIES) as WeaponFamily[]) {
+  for (const family of Object.keys(FAMILIES) as BasicFamily[]) {
     const base = FAMILIES[family];
     TIERS.forEach((tier, i) => {
       const id = `${family}-${tier}`;
@@ -63,7 +69,7 @@ function build(): Record<string, Weapon> {
 export const WEAPONS: Record<string, Weapon> = build();
 
 export function getWeapon(id: string): Weapon {
-  return WEAPONS[id] ?? WEAPONS['sword-wood'];
+  return WEAPONS[id] ?? SHOP_WEAPONS[id] ?? WEAPONS['sword-wood'];
 }
 
 export function tierIndex(tier: Tier): number {
