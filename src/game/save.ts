@@ -1,4 +1,4 @@
-import { newProfile, type Profile } from './progression';
+import { coinsForLevels, newProfile, type Profile } from './progression';
 import { PERSONALITIES } from './data/personalities';
 
 export const SAVE_KEY = 'fighting-figures.save';
@@ -29,6 +29,7 @@ export function parseProfile(raw: unknown): Profile | null {
     battles: typeof r.battles === 'number' ? r.battles : 0,
     wins: typeof r.wins === 'number' ? r.wins : 0,
     coins: typeof r.coins === 'number' && r.coins >= 0 ? Math.floor(r.coins) : 0,
+    coinsBackPaid: true,
     pendingPrizes: Array.isArray(r.pendingPrizes)
       ? r.pendingPrizes.filter((n): n is number => typeof n === 'number' && n >= 2 && n <= 30).slice(0, 30)
       : [],
@@ -50,6 +51,11 @@ export function parseProfile(raw: unknown): Profile | null {
   if (typeof loadout.hat === 'string' && p.owned.cosmetics.includes(loadout.hat)) p.loadout.hat = loadout.hat;
   if (typeof loadout.cape === 'string' && p.owned.cosmetics.includes(loadout.cape)) p.loadout.cape = loadout.cape;
   if (typeof loadout.armor === 'string' && p.owned.armor.includes(loadout.armor)) p.loadout.armor = loadout.armor;
+  // Saves from before the shop: pay the coins for every level already reached, one time.
+  if (r.coinsBackPaid !== true) {
+    const levels = Array.from({ length: p.level - 1 }, (_, i) => i + 2);
+    p.coins += coinsForLevels(levels);
+  }
   return p;
 }
 

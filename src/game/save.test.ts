@@ -72,14 +72,35 @@ describe('save', () => {
     expect(loaded.coins).toBe(321);
     expect(loaded.loadout.armor).toBe('armor-chain');
   });
-  it('old saves load with no coins and no armor', () => {
+  it('old saves get back-paid the coins for levels already reached, once', () => {
     const s = new MemStorage();
-    const { coins: _c, ...rest } = newProfile();
+    const { coins: _c, coinsBackPaid: _b, ...rest } = newProfile();
     void _c;
-    const old = { ...rest, owned: { weapons: ['sword-wood'], cosmetics: ['skin-blue'], personalities: ['hothead'] } };
+    void _b;
+    const old = { ...rest, level: 12, owned: { weapons: ['sword-wood'], cosmetics: ['skin-blue'], personalities: ['hothead'] } };
     s.setItem(SAVE_KEY, JSON.stringify(old));
     const p = loadProfile(s);
-    expect(p.coins).toBe(0);
+    // Levels 2..12 = 11 levels x 40, plus the level-10 bonus of 300.
+    expect(p.coins).toBe(11 * 40 + 300);
     expect(p.owned.armor).toEqual([]);
+    saveProfile(s, { ...p, coins: 5 });
+    expect(loadProfile(s).coins).toBe(5);
+  });
+
+  it('level-1 old saves get nothing extra', () => {
+    const s = new MemStorage();
+    const { coins: _c, coinsBackPaid: _b, ...rest } = newProfile();
+    void _c;
+    void _b;
+    s.setItem(SAVE_KEY, JSON.stringify(rest));
+    expect(loadProfile(s).coins).toBe(0);
+  });
+
+  it('saves made with coins but before back-pay also get it once', () => {
+    const s = new MemStorage();
+    const { coinsBackPaid: _b, ...rest } = newProfile();
+    void _b;
+    s.setItem(SAVE_KEY, JSON.stringify({ ...rest, level: 3, coins: 10 }));
+    expect(loadProfile(s).coins).toBe(10 + 80);
   });
 });

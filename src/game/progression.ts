@@ -16,6 +16,8 @@ export interface Profile {
   pendingPrizes: number[];
   /** Figure Coins, spent in the shop. */
   coins: number;
+  /** True once a pre-shop save has been paid coins for the levels it already had. */
+  coinsBackPaid: boolean;
   owned: { weapons: string[]; cosmetics: string[]; personalities: PersonalityId[]; armor: string[] };
   loadout: Loadout;
 }
@@ -46,6 +48,7 @@ export function newProfile(): Profile {
     wins: 0,
     pendingPrizes: [],
     coins: 0,
+    coinsBackPaid: true,
     owned: {
       weapons: ['sword-wood'],
       cosmetics: ['skin-blue'],
