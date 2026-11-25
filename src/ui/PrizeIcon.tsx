@@ -66,6 +66,13 @@ function drawWeapon(px: Px, id: string) {
       px(8, 1, 7, 5, c);
       px(9, 2, 2, 1, '#ffffff');
       break;
+    case 'cornsword':
+      px(1, 13, 2, 2, '#55a630');
+      px(0, 11, 2, 1, '#7ac943');
+      px(3, 13, 2, 1, '#7ac943');
+      for (let i = 0; i < 8; i++) px(3 + i, 11 - i, 3, 3, i % 2 ? '#f2b600' : '#ffd23f');
+      px(12, 1, 2, 2, '#ffd23f');
+      break;
     case 'thunderspear':
       for (let i = 0; i < 11; i++) px(1 + i, 14 - i, 2, 2, '#3a3a55');
       px(11, 0, 3, 2, c);
@@ -125,6 +132,12 @@ function drawPrize(g: CanvasRenderingContext2D, prize: Prize) {
   if (!c) return;
   const color = hex(c.color);
   if (c.slot === 'skin') return drawFigure(px, color);
+  if (c.style === 'turkey') {
+    const fan = ['#8a5a2b', '#ff8c42', '#c0392b', '#ffd23f', '#c0392b', '#ff8c42', '#8a5a2b'];
+    fan.forEach((col, i) => px(1 + i * 2, 2 + Math.abs(3 - i), 2, 9 - Math.abs(3 - i), col));
+    px(6, 10, 4, 4, '#8a5a2b');
+    return;
+  }
   if (c.slot === 'cape') {
     px(5, 2, 6, 2, INK);
     px(4, 4, 8, 10, color);
@@ -158,6 +171,12 @@ function drawPrize(g: CanvasRenderingContext2D, prize: Prize) {
       px(1, 6, 14, 3, color);
       px(4, 3, 8, 3, color);
       px(7, 4, 2, 2, '#ffffff');
+      break;
+    case 'pilgrim':
+      px(2, 8, 12, 1, color);
+      px(4, 2, 8, 6, color);
+      px(4, 6, 8, 1, '#5a3b1f');
+      px(7, 6, 2, 1, '#ffc93c');
       break;
     case 'helmet':
       px(3, 4, 10, 6, color);

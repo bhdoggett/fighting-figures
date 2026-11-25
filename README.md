@@ -61,6 +61,10 @@ Bots wear armor from level 8 and sometimes bring shop weapons from level 16, so 
 
 When running `npm run dev`, the shop has a **+1000 coins (dev only)** button for testing. It isn't in the real build.
 
+## Holiday gifts
+
+Open the game from 5 days before to 5 days after US Thanksgiving (the fourth Thursday of November) to get the **Pilgrim Hat**, **Turkey Cape**, and **Cornstalk Sword** for keeps. Holiday items are never level-up prizes or shop items. While developing, add `?today=2026-11-26` to the address to test any date.
+
 ## Saving
 
 Progress saves in the browser automatically. Use **Save code** on the main screen to copy a backup code, and **Load code** to restore it (for example, in another browser).

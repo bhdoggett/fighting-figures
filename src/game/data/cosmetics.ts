@@ -20,6 +20,8 @@ export const COSMETICS: Cosmetic[] = [
   { id: 'cape-purple', slot: 'cape', name: 'Wizard Cape', color: 0x7b2cbf },
   { id: 'cape-gold', slot: 'cape', name: 'Golden Cape', color: 0xffc93c },
   { id: 'cape-green', slot: 'cape', name: 'Leafy Cape', color: 0x55a630 },
+  { id: 'hat-pilgrim', slot: 'hat', name: 'Pilgrim Hat', color: 0x1d1b2f, shape: 'pilgrim', event: true },
+  { id: 'cape-turkey', slot: 'cape', name: 'Turkey Cape', color: 0x8a5a2b, style: 'turkey', event: true },
 ];
 
 export function getCosmetic(id: string | undefined): Cosmetic | undefined {

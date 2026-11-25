@@ -121,7 +121,7 @@ export function offerPrizes(p: Profile, level: number, rng: () => number): Prize
       label: w.name,
       detail: `${FAMILY_TRADEOFFS[w.family].good}, ${FAMILY_TRADEOFFS[w.family].bad.toLowerCase()}`,
     }));
-  const cosmetics: Prize[] = COSMETICS.filter((c) => !p.owned.cosmetics.includes(c.id)).map((c) => ({
+  const cosmetics: Prize[] = COSMETICS.filter((c) => !c.event && !p.owned.cosmetics.includes(c.id)).map((c) => ({
     kind: 'cosmetic' as const,
     id: c.id,
     label: c.name,

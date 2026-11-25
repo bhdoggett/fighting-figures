@@ -12,6 +12,14 @@ import { isTouchDevice } from './device';
 import { loadSettings, saveSettings, type Settings } from '../game/settings';
 import { RotateHint } from './RotateHint';
 import { ShopScreen } from './ShopScreen';
+import { HolidayPopup } from './HolidayPopup';
+import { grantSeasonal, type SeasonalGift } from '../game/seasonal';
+
+/** Today, or ?today=YYYY-MM-DD while developing (to test holiday gifts). */
+function today(): Date {
+  const override = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('today') : null;
+  return override ? new Date(`${override}T12:00:00`) : new Date();
+}
 
 type Screen =
   | { kind: 'pick' }
@@ -32,7 +40,9 @@ function matchDuration(): number {
 }
 
 function Screens() {
-  const [profile, setProfile] = useState<Profile>(() => loadProfile(window.localStorage));
+  const [start] = useState(() => grantSeasonal(loadProfile(window.localStorage), today()));
+  const [profile, setProfile] = useState<Profile>(start.profile);
+  const [gifts, setGifts] = useState<SeasonalGift[]>(start.granted);
   const [settings, setSettings] = useState<Settings>(() => loadSettings(window.localStorage));
   const [touch] = useState(isTouchDevice);
 
@@ -47,9 +57,16 @@ function Screens() {
   }, [profile]);
 
   const startFight = useCallback(() => {
+    // The game may have been left open overnight into the holiday window.
+    const { profile: gifted, granted } = grantSeasonal(profile, today());
+    if (granted.length > 0) {
+      setProfile(gifted);
+      setGifts(granted);
+      return;
+    }
     const bot = botLoadoutForLevel(profile.level, Math.random);
     setScreen({ kind: 'fight', bot, difficulty: difficultyForLevel(profile.level), key: Date.now() });
-  }, [profile.level]);
+  }, [profile]);
 
   const finishFight = useCallback(
     (m: MatchState) => {
@@ -92,6 +109,7 @@ function Screens() {
     [profile],
   );
 
+  const view = (() => {
   switch (screen.kind) {
     case 'pick':
       return (
@@ -127,6 +145,25 @@ function Screens() {
     case 'prize':
       return <PrizePopup level={screen.level} offers={screen.offers} onPick={pickPrize} />;
   }
+  })();
+
+  const wearGifts = () => {
+    const loadout = { ...profile.loadout };
+    for (const g of gifts) {
+      if (g.id.startsWith('hat-')) loadout.hat = g.id;
+      else if (g.id.startsWith('cape-')) loadout.cape = g.id;
+      else loadout.weapon = g.id;
+    }
+    setProfile({ ...profile, loadout });
+    setGifts([]);
+  };
+
+  return (
+    <>
+      {view}
+      {gifts.length > 0 && <HolidayPopup gifts={gifts} onWear={wearGifts} onClose={() => setGifts([])} />}
+    </>
+  );
 }
 
 export function App() {

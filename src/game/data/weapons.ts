@@ -43,6 +43,7 @@ export const FAMILY_TRADEOFFS: Record<WeaponFamily, { good: string; bad: string 
   flamesword: { good: 'Hits set foes on fire', bad: 'A bit slow' },
   frosthammer: { good: 'Hits freeze foes slow', bad: 'Very slow swing' },
   thunderspear: { good: 'Long reach, every 3rd hit zaps', bad: 'Pricey!' },
+  cornsword: { good: 'Balanced (and very festive)', bad: 'Nothing special' },
 };
 
 function build(): Record<string, Weapon> {
@@ -69,7 +70,12 @@ function build(): Record<string, Weapon> {
 export const WEAPONS: Record<string, Weapon> = build();
 
 export function getWeapon(id: string): Weapon {
-  return WEAPONS[id] ?? SHOP_WEAPONS[id] ?? WEAPONS['sword-wood'];
+  return WEAPONS[id] ?? SHOP_WEAPONS[id] ?? EVENT_WEAPONS[id] ?? WEAPONS['sword-wood'];
+}
+
+/** Holiday weapons: given away during events, never prizes or shop items. */
+export const EVENT_WEAPONS: Record<string, Weapon> = {
+  'event-cornsword': { id: 'event-cornsword', family: 'cornsword', tier: 'wood', name: 'Cornstalk Sword', damageMul: 1, swingTimeMul: 1, reach: 1.6, color: 0xffd23f },
 }
 
 export function tierIndex(tier: Tier): number {

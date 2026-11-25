@@ -1,0 +1,62 @@
+.cover {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: rgba(138, 90, 43, 0.55);
+  padding: var(--space-4);
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+  background: linear-gradient(#fff3d6, var(--color-paper));
+  max-width: 720px;
+  animation: drop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+@keyframes drop {
+  from { transform: translateY(-40px) scale(0.85); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.sub {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+}
+
+.gifts {
+  display: flex;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.gift {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+@media (max-height: 500px) {
+  .box { gap: var(--space-2); padding: var(--space-3); }
+  .gifts { gap: var(--space-3); }
+}

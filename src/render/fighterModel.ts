@@ -187,6 +187,28 @@ function buildWeapon(weaponId: string): THREE.Group {
       g.add(head);
       break;
     }
+    case 'cornsword': {
+      // A green cornstalk handle with a big corn cob for a blade.
+      g.add(box(0.1, 0.32, 0.1, mat(0x55a630)));
+      for (const side of [-1, 1]) {
+        const leaf = box(0.3, 0.06, 0.12, mat(0x7ac943));
+        leaf.position.set(side * 0.16, 0.2, 0);
+        leaf.rotation.z = side * -0.5;
+        g.add(leaf);
+      }
+      const cob = box(0.18, 0.85, 0.12, mat(0xffd23f));
+      cob.position.y = 0.66;
+      g.add(cob);
+      for (let i = 0; i < 4; i++) {
+        const kernelRow = box(0.2, 0.05, 0.14, mat(0xf2b600));
+        kernelRow.position.y = 0.38 + i * 0.18;
+        g.add(kernelRow);
+      }
+      const tip = box(0.1, 0.14, 0.08, mat(0xffd23f));
+      tip.position.y = 1.15;
+      g.add(tip);
+      break;
+    }
     case 'thunderspear': {
       const sh = box(0.08, 2.1, 0.08, mat(0x3a3a55));
       sh.position.y = 0.65;
@@ -282,6 +304,19 @@ function buildHat(hatId: string | undefined): THREE.Group | null {
       const plume = box(0.08, 0.25, 0.3, mat(0xe63946));
       plume.position.y = 0.2;
       g.add(plume);
+      break;
+    }
+    case 'pilgrim': {
+      g.add(box(0.72, 0.05, 0.72, m));
+      const crown = box(0.46, 0.46, 0.46, m);
+      crown.position.y = 0.25;
+      g.add(crown);
+      const band = box(0.48, 0.1, 0.48, mat(0x5a3b1f));
+      band.position.y = 0.08;
+      g.add(band);
+      const buckle = box(0.16, 0.12, 0.02, mat(0xffc93c));
+      buckle.position.set(0, 0.08, 0.25);
+      g.add(buckle);
       break;
     }
     case 'bunny': {
@@ -396,7 +431,25 @@ export class FighterModel {
     if (armorMesh) this.body.add(armorMesh);
 
     const capeInfo = getCosmetic(loadout.cape);
-    if (capeInfo) {
+    if (capeInfo?.style === 'turkey') {
+      // Turkey tail: a fan of feathers sticking up behind the shoulders.
+      const fan = new THREE.Group();
+      const colors = [0x8a5a2b, 0xff8c42, 0xc0392b, 0xffd23f, 0x8a5a2b, 0xff8c42, 0xc0392b];
+      colors.forEach((c, i) => {
+        const angle = (i - (colors.length - 1) / 2) * 0.32;
+        const feather = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.8, 0.04).translate(0, 0.4, 0), mat(c));
+        feather.castShadow = true;
+        feather.rotation.z = angle;
+        fan.add(feather);
+        const tip = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.12, 0.05), mat(0xfffaf0));
+        tip.position.set(-Math.sin(angle) * 0.74, Math.cos(angle) * 0.74, 0.005);
+        tip.rotation.z = angle;
+        fan.add(tip);
+      });
+      fan.position.set(0, 1.05, -0.2);
+      fan.rotation.x = -0.25;
+      this.body.add(fan);
+    } else if (capeInfo) {
       const capeGeo = new THREE.BoxGeometry(0.5, 1.0, 0.04);
       capeGeo.translate(0, -0.5, 0);
       this.cape = new THREE.Mesh(capeGeo, mat(capeInfo.color));
