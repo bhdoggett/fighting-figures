@@ -502,14 +502,20 @@ export class FighterModel {
       // Turkey tail: a fan of feathers sticking up behind the shoulders.
       const fan = new THREE.Group();
       const colors = [0x8a5a2b, 0xff8c42, 0xc0392b, 0xffd23f, 0x8a5a2b, 0xff8c42, 0xc0392b];
+      const mid = (colors.length - 1) / 2;
       colors.forEach((c, i) => {
-        const angle = (i - (colors.length - 1) / 2) * 0.32;
-        const feather = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.8, 0.04).translate(0, 0.4, 0), mat(c));
+        const angle = (i - mid) * 0.32;
+        // Each feather sits at its own depth (middle one at the back) so overlapping
+        // feathers never share a plane — that sharing is what made the colors flicker.
+        const depth = -Math.abs(i - mid) * 0.03 + i * 0.002;
+        const feather = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.8, 0.03).translate(0, 0.4, 0), mat(c));
         feather.castShadow = true;
         feather.rotation.z = angle;
+        feather.position.z = -depth;
         fan.add(feather);
-        const tip = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.12, 0.05), mat(0xfffaf0));
-        tip.position.set(-Math.sin(angle) * 0.74, Math.cos(angle) * 0.74, 0.005);
+        // Tip is thicker than the feather so it shows from the front and the back.
+        const tip = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.12, 0.07), mat(0xfffaf0));
+        tip.position.set(-Math.sin(angle) * 0.74, Math.cos(angle) * 0.74, -depth);
         tip.rotation.z = angle;
         fan.add(tip);
       });
