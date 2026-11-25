@@ -49,11 +49,15 @@ describe('thanksgiving', () => {
 });
 
 describe('christmas', () => {
-  it('runs the whole month of December', () => {
-    expect(isChristmasMonth(d('2026-11-30'))).toBe(false);
-    expect(isChristmasMonth(d('2026-12-01'))).toBe(true);
+  it('starts the day after the Thanksgiving gift ends and runs through December', () => {
+    // 2026: Thanksgiving Nov 26, its gift window ends Dec 1.
+    expect(isChristmasMonth(d('2026-12-01'))).toBe(false);
+    expect(isChristmasMonth(d('2026-12-02'))).toBe(true);
     expect(isChristmasMonth(d('2026-12-31'))).toBe(true);
     expect(isChristmasMonth(d('2027-01-01'))).toBe(false);
+    // 2028: Thanksgiving Nov 23, window ends Nov 28, so Christmas still waits for December.
+    expect(isChristmasMonth(d('2028-11-30'))).toBe(false);
+    expect(isChristmasMonth(d('2028-12-01'))).toBe(true);
   });
 
   it('grants the christmas outfit in December', () => {
@@ -65,9 +69,11 @@ describe('christmas', () => {
     expect(getWeapon('event-candycane').name).toBe('Candy Cane Sword');
   });
 
-  it('December 1st gives both holiday gifts', () => {
-    const ids = grantSeasonal(newProfile(), d('2026-12-01')).granted.map((g) => g.id);
-    expect(ids).toEqual(expect.arrayContaining([...THANKSGIVING_ITEMS, ...CHRISTMAS_ITEMS]));
+  it('never gives both holiday gifts on the same day', () => {
+    for (const day of ['2026-11-26', '2026-12-01', '2026-12-02', '2027-11-30', '2027-12-01']) {
+      const events = new Set(grantSeasonal(newProfile(), d(day)).granted.map((g) => g.event));
+      expect(events.size).toBeLessThanOrEqual(1);
+    }
   });
 
   it('christmas items are never prizes', () => {

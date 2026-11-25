@@ -24,9 +24,11 @@ export function isThanksgivingWindow(now: Date): boolean {
 
 export const CHRISTMAS_ITEMS = ['skin-gingerbread', 'hat-reindeer', 'event-candycane'];
 
-/** True for the whole month of December. */
+/** True in December, starting the day after the Thanksgiving gift window ends. */
 export function isChristmasMonth(now: Date): boolean {
-  return now.getMonth() === 11;
+  if (now.getMonth() !== 11) return false;
+  const thanksgivingEnds = dayNumber(thanksgivingDate(now.getFullYear())) + WINDOW_DAYS;
+  return dayNumber(now) > thanksgivingEnds;
 }
 
 interface HolidayEvent {
