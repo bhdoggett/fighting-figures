@@ -26,12 +26,12 @@ function shade(color: number, f: number): number {
 }
 
 /** 8x8 pixel-art face drawn per personality. */
-function faceTexture(personality: PersonalityId): THREE.CanvasTexture {
+function faceTexture(personality: PersonalityId, skinColor = '#f2c79b'): THREE.CanvasTexture {
   const c = document.createElement('canvas');
   c.width = 8;
   c.height = 8;
   const g = c.getContext('2d')!;
-  g.fillStyle = '#f2c79b';
+  g.fillStyle = skinColor;
   g.fillRect(0, 0, 8, 8);
   const px = (x: number, y: number, color: string) => {
     g.fillStyle = color;
@@ -187,6 +187,28 @@ function buildWeapon(weaponId: string): THREE.Group {
       g.add(head);
       break;
     }
+    case 'candycane': {
+      // Red-and-white striped cane with a hook on top.
+      const red = mat(0xe63946);
+      const white = mat(0xfffaf0);
+      for (let i = 0; i < 9; i++) {
+        const seg = box(0.12, 0.13, 0.12, i % 2 ? white : red);
+        seg.position.y = 0.05 + i * 0.13;
+        g.add(seg);
+      }
+      const hook = [
+        [0.08, 1.22],
+        [0.2, 1.3],
+        [0.32, 1.26],
+        [0.38, 1.14],
+      ];
+      hook.forEach(([x, y], i) => {
+        const seg = box(0.13, 0.13, 0.12, i % 2 ? red : white);
+        seg.position.set(x, y, 0);
+        g.add(seg);
+      });
+      break;
+    }
     case 'cornsword': {
       // A green cornstalk handle with a big corn cob for a blade.
       g.add(box(0.1, 0.32, 0.1, mat(0x55a630)));
@@ -319,6 +341,26 @@ function buildHat(hatId: string | undefined): THREE.Group | null {
       g.add(buckle);
       break;
     }
+    case 'reindeer': {
+      // Rudolph: branching antlers and a glowing red nose.
+      const antler = mat(0x8a5a2b);
+      for (const side of [-1, 1]) {
+        const main = box(0.07, 0.42, 0.07, antler);
+        main.position.set(side * 0.18, 0.18, 0);
+        main.rotation.z = side * -0.3;
+        g.add(main);
+        const branch1 = box(0.22, 0.06, 0.06, antler);
+        branch1.position.set(side * 0.3, 0.26, 0);
+        g.add(branch1);
+        const branch2 = box(0.06, 0.18, 0.06, antler);
+        branch2.position.set(side * 0.38, 0.34, 0);
+        g.add(branch2);
+      }
+      const nose = box(0.12, 0.12, 0.08, new THREE.MeshLambertMaterial({ color: 0xff2a2a, emissive: 0xff0000, emissiveIntensity: 0.8 }));
+      nose.position.set(0, -0.42, 0.28);
+      g.add(nose);
+      break;
+    }
     case 'bunny': {
       for (const x of [-0.13, 0.13]) {
         const ear = box(0.1, 0.45, 0.06, m);
@@ -362,12 +404,14 @@ export class FighterModel {
 
   constructor(loadout: Loadout) {
     const personality = getPersonality(loadout.personality);
-    const skin = getCosmetic(loadout.skin)?.color ?? 0x3a86ff;
+    const skinItem = getCosmetic(loadout.skin);
+    const gingerbread = skinItem?.style === 'gingerbread';
+    const skin = skinItem?.color ?? 0x3a86ff;
     this.family = getWeapon(loadout.weapon).family;
 
     const shirt = mat(skin);
-    const pants = mat(shade(skin, 0.55));
-    const skinTone = mat(personality.id === 'robot' ? 0xb8c4cc : 0xf2c79b);
+    const pants = mat(gingerbread ? skin : shade(skin, 0.55));
+    const skinTone = mat(gingerbread ? skin : personality.id === 'robot' ? 0xb8c4cc : 0xf2c79b);
     const accent = mat(personality.color);
     this.materials.push(shirt, pants, skinTone, accent);
 
@@ -399,7 +443,7 @@ export class FighterModel {
     }
 
     // Head with a pixel face on the front (+z) side
-    const faceMat = new THREE.MeshLambertMaterial({ map: faceTexture(personality.id) });
+    const faceMat = new THREE.MeshLambertMaterial({ map: faceTexture(personality.id, gingerbread ? '#b5651d' : undefined) });
     const headMats = [skinTone, skinTone, skinTone, skinTone, faceMat, skinTone];
     if (personality.id === 'ninja') {
       const wrap = mat(0x2b2d42);
@@ -410,6 +454,29 @@ export class FighterModel {
     this.head.castShadow = true;
     this.head.position.y = 1.75;
     this.body.add(this.head);
+
+    if (gingerbread) {
+      // White icing squiggles on wrists and ankles, plus gumdrop buttons.
+      const icing = mat(0xfffaf0);
+      for (const arm of [this.armL, this.armR]) {
+        const cuff = box(0.25, 0.06, 0.25, icing);
+        cuff.position.y = -0.42;
+        arm.add(cuff);
+      }
+      for (const leg of [this.legL, this.legR]) {
+        const cuff = box(0.27, 0.06, 0.27, icing);
+        cuff.position.y = -0.62;
+        leg.add(cuff);
+      }
+      [0xe63946, 0x2ec27e, 0xe63946].forEach((c, i) => {
+        const gum = box(0.1, 0.1, 0.06, mat(c));
+        gum.position.set(0, 1.35 - i * 0.2, 0.16);
+        this.body.add(gum);
+      });
+      const brow = box(0.4, 0.04, 0.02, icing);
+      brow.position.set(0, 0.17, 0.26);
+      this.head.add(brow);
+    }
     if (personality.id === 'wizard' && !loadout.hat) {
       const hatMat = mat(0x3a0ca3);
       const brim = box(0.7, 0.06, 0.7, hatMat);

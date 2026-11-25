@@ -44,6 +44,7 @@ export const FAMILY_TRADEOFFS: Record<WeaponFamily, { good: string; bad: string 
   frosthammer: { good: 'Hits freeze foes slow', bad: 'Very slow swing' },
   thunderspear: { good: 'Long reach, every 3rd hit zaps', bad: 'Pricey!' },
   cornsword: { good: 'Balanced (and very festive)', bad: 'Nothing special' },
+  candycane: { good: 'Balanced (and very sweet)', bad: 'Nothing special' },
 };
 
 function build(): Record<string, Weapon> {
@@ -75,6 +76,7 @@ export function getWeapon(id: string): Weapon {
 
 /** Holiday weapons: given away during events, never prizes or shop items. */
 export const EVENT_WEAPONS: Record<string, Weapon> = {
+  'event-candycane': { id: 'event-candycane', family: 'candycane', tier: 'wood', name: 'Candy Cane Sword', damageMul: 1, swingTimeMul: 1, reach: 1.6, color: 0xe63946 },
   'event-cornsword': { id: 'event-cornsword', family: 'cornsword', tier: 'wood', name: 'Cornstalk Sword', damageMul: 1, swingTimeMul: 1, reach: 1.6, color: 0xffd23f },
 }
 

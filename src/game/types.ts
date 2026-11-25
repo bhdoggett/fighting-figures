@@ -20,7 +20,7 @@ export interface Personality {
 
 export type BasicFamily = 'sword' | 'hammer' | 'daggers' | 'spear';
 export type ShopFamily = 'mace' | 'darts' | 'flamesword' | 'frosthammer' | 'thunderspear';
-export type EventFamily = 'cornsword';
+export type EventFamily = 'cornsword' | 'candycane';
 export type WeaponFamily = BasicFamily | ShopFamily | EventFamily;
 
 /** Extra thing a shop weapon's hits do. */
@@ -60,9 +60,9 @@ export interface Cosmetic {
   name: string;
   color: number;
   /** hats only: which shape to build */
-  shape?: 'cap' | 'crown' | 'pirate' | 'tophat' | 'helmet' | 'bunny' | 'pilgrim';
+  shape?: 'cap' | 'crown' | 'pirate' | 'tophat' | 'helmet' | 'bunny' | 'pilgrim' | 'reindeer';
   /** Capes only: special look. */
-  style?: 'turkey';
+  style?: 'turkey' | 'gingerbread';
   /** Holiday item: never a level-up prize. */
   event?: boolean;
 }

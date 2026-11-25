@@ -21,6 +21,8 @@ export const COSMETICS: Cosmetic[] = [
   { id: 'cape-gold', slot: 'cape', name: 'Golden Cape', color: 0xffc93c },
   { id: 'cape-green', slot: 'cape', name: 'Leafy Cape', color: 0x55a630 },
   { id: 'hat-pilgrim', slot: 'hat', name: 'Pilgrim Hat', color: 0x1d1b2f, shape: 'pilgrim', event: true },
+  { id: 'skin-gingerbread', slot: 'skin', name: 'Gingerbread', color: 0xb5651d, style: 'gingerbread', event: true },
+  { id: 'hat-reindeer', slot: 'hat', name: 'Rudolph Antlers & Nose', color: 0x8a5a2b, shape: 'reindeer', event: true },
   { id: 'cape-turkey', slot: 'cape', name: 'Turkey Cape', color: 0x8a5a2b, style: 'turkey', event: true },
 ];
 

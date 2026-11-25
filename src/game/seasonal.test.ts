@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { grantSeasonal, isThanksgivingWindow, thanksgivingDate, THANKSGIVING_ITEMS } from './seasonal';
+import { CHRISTMAS_ITEMS, grantSeasonal, isChristmasMonth, isThanksgivingWindow, thanksgivingDate, THANKSGIVING_ITEMS } from './seasonal';
 import { newProfile, offerPrizes } from './progression';
 import { SHOP_ITEMS } from './data/shop';
 import { getWeapon } from './data/weapons';
@@ -45,5 +45,36 @@ describe('thanksgiving', () => {
       }
     }
     expect(SHOP_ITEMS.map((s) => s.id)).not.toEqual(expect.arrayContaining(['event-cornsword']));
+  });
+});
+
+describe('christmas', () => {
+  it('runs the whole month of December', () => {
+    expect(isChristmasMonth(d('2026-11-30'))).toBe(false);
+    expect(isChristmasMonth(d('2026-12-01'))).toBe(true);
+    expect(isChristmasMonth(d('2026-12-31'))).toBe(true);
+    expect(isChristmasMonth(d('2027-01-01'))).toBe(false);
+  });
+
+  it('grants the christmas outfit in December', () => {
+    const { profile, granted } = grantSeasonal(newProfile(), d('2026-12-15'));
+    expect(granted.map((g) => g.id).sort()).toEqual([...CHRISTMAS_ITEMS].sort());
+    expect(granted.every((g) => g.event === 'Merry Christmas!')).toBe(true);
+    expect(profile.owned.cosmetics).toEqual(expect.arrayContaining(['skin-gingerbread', 'hat-reindeer']));
+    expect(profile.owned.weapons).toContain('event-candycane');
+    expect(getWeapon('event-candycane').name).toBe('Candy Cane Sword');
+  });
+
+  it('December 1st gives both holiday gifts', () => {
+    const ids = grantSeasonal(newProfile(), d('2026-12-01')).granted.map((g) => g.id);
+    expect(ids).toEqual(expect.arrayContaining([...THANKSGIVING_ITEMS, ...CHRISTMAS_ITEMS]));
+  });
+
+  it('christmas items are never prizes', () => {
+    for (let i = 0; i < 100; i++) {
+      for (const prize of offerPrizes(newProfile(), 2 + (i % 28), Math.random)) {
+        expect(CHRISTMAS_ITEMS).not.toContain(prize.id);
+      }
+    }
   });
 });

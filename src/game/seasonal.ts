@@ -22,25 +22,47 @@ export function isThanksgivingWindow(now: Date): boolean {
   return Math.abs(diff) <= WINDOW_DAYS;
 }
 
+export const CHRISTMAS_ITEMS = ['skin-gingerbread', 'hat-reindeer', 'event-candycane'];
+
+/** True for the whole month of December. */
+export function isChristmasMonth(now: Date): boolean {
+  return now.getMonth() === 11;
+}
+
+interface HolidayEvent {
+  greeting: string;
+  items: string[];
+  active: (now: Date) => boolean;
+}
+
+const EVENTS: HolidayEvent[] = [
+  { greeting: 'Happy Thanksgiving!', items: THANKSGIVING_ITEMS, active: isThanksgivingWindow },
+  { greeting: 'Merry Christmas!', items: CHRISTMAS_ITEMS, active: isChristmasMonth },
+];
+
 export interface SeasonalGift {
   id: string;
   name: string;
+  /** Which holiday it's from, e.g. "Merry Christmas!" */
+  event: string;
 }
 
 /** Give any holiday items the player should have today. Returns what was newly given. */
 export function grantSeasonal(p: Profile, now: Date): { profile: Profile; granted: SeasonalGift[] } {
-  if (!isThanksgivingWindow(now)) return { profile: p, granted: [] };
   const granted: SeasonalGift[] = [];
   const cosmetics = [...p.owned.cosmetics];
   const weapons = [...p.owned.weapons];
-  for (const id of THANKSGIVING_ITEMS) {
-    const cosmetic = getCosmetic(id);
-    if (cosmetic && !cosmetics.includes(id)) {
-      cosmetics.push(id);
-      granted.push({ id, name: cosmetic.name });
-    } else if (!cosmetic && !weapons.includes(id)) {
-      weapons.push(id);
-      granted.push({ id, name: getWeapon(id).name });
+  for (const ev of EVENTS) {
+    if (!ev.active(now)) continue;
+    for (const id of ev.items) {
+      const cosmetic = getCosmetic(id);
+      if (cosmetic && !cosmetics.includes(id)) {
+        cosmetics.push(id);
+        granted.push({ id, name: cosmetic.name, event: ev.greeting });
+      } else if (!cosmetic && !weapons.includes(id)) {
+        weapons.push(id);
+        granted.push({ id, name: getWeapon(id).name, event: ev.greeting });
+      }
     }
   }
   if (granted.length === 0) return { profile: p, granted };

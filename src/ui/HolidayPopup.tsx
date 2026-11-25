@@ -14,8 +14,8 @@ export function HolidayPopup({ gifts, onWear, onClose }: Props) {
   return (
     <div className={styles.cover}>
       <div className={`${shared.panel} ${styles.box}`}>
-        <h2 className={shared.title}>Happy Thanksgiving!</h2>
-        <p className={styles.sub}>A holiday gift, just for playing this week. It's yours to keep!</p>
+        <h2 className={shared.title}>{[...new Set(gifts.map((g) => g.event))].join(' ')}</h2>
+        <p className={styles.sub}>A holiday gift, just for playing. It's yours to keep!</p>
         <div className={styles.gifts}>
           {gifts.map((g) => (
             <div key={g.id} className={styles.gift}>

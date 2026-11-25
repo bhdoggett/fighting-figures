@@ -150,7 +150,8 @@ function Screens() {
   const wearGifts = () => {
     const loadout = { ...profile.loadout };
     for (const g of gifts) {
-      if (g.id.startsWith('hat-')) loadout.hat = g.id;
+      if (g.id.startsWith('skin-')) loadout.skin = g.id;
+      else if (g.id.startsWith('hat-')) loadout.hat = g.id;
       else if (g.id.startsWith('cape-')) loadout.cape = g.id;
       else loadout.weapon = g.id;
     }
