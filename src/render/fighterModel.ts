@@ -514,8 +514,9 @@ export class FighterModel {
         feather.position.z = -depth;
         fan.add(feather);
         // Tip is thicker than the feather so it shows from the front and the back.
-        const tip = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.12, 0.07), mat(0xfffaf0));
-        tip.position.set(-Math.sin(angle) * 0.74, Math.cos(angle) * 0.74, -depth);
+        // Cap reaches past the feather's end (0.80) so their top faces never line up.
+        const tip = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.16, 0.07), mat(0xfffaf0));
+        tip.position.set(-Math.sin(angle) * 0.77, Math.cos(angle) * 0.77, -depth);
         tip.rotation.z = angle;
         fan.add(tip);
       });
