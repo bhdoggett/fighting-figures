@@ -91,6 +91,19 @@ function drawWeapon(px: Px, id: string) {
 function drawArmor(px: Px, id: string) {
   const a = getArmor(id);
   if (!a) return;
+  if (a.id === 'armor-harvest') {
+    px(3, 4, 10, 9, '#ff8c42');
+    px(5, 4, 1, 9, '#d9661a');
+    px(8, 4, 1, 9, '#d9661a');
+    px(11, 4, 1, 9, '#d9661a');
+    px(7, 2, 2, 2, '#4f7a28');
+    px(0, 3, 4, 2, '#b9cf5a');
+    px(12, 3, 4, 2, '#b9cf5a');
+    px(3, 13, 2, 2, '#c0392b');
+    px(7, 13, 2, 2, '#ffd23f');
+    px(11, 13, 2, 2, '#ff8c42');
+    return;
+  }
   const c = hex(a.color);
   px(3, 3, 10, 11, c);
   px(1, 3, 3, 4, c);

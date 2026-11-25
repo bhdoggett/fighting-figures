@@ -6,7 +6,7 @@ import { getPersonality } from '../game/data/personalities';
 import { FAMILY_TRADEOFFS, getWeapon } from '../game/data/weapons';
 import { COSMETICS, getCosmetic } from '../game/data/cosmetics';
 import { MAX_LEVEL } from '../game/data/ranks';
-import { ARMOR, getArmor } from '../game/data/shop';
+import { ALL_ARMOR, getArmor } from '../game/data/shop';
 import type { CosmeticSlot } from '../game/types';
 import { PreviewRenderer } from '../render/preview';
 import { PREVIEW_MOVES, previewCaption, type PreviewMove } from '../render/previewMoves';
@@ -179,7 +179,7 @@ export function PickScreen({ profile, onChange, onFight, onShop, touch, leftie, 
   const skins = ownedSlot('skin');
   const hats: (string | undefined)[] = [undefined, ...ownedSlot('hat')];
   const capes: (string | undefined)[] = [undefined, ...ownedSlot('cape')];
-  const armors: (string | undefined)[] = [undefined, ...ARMOR.filter((a) => owned.armor.includes(a.id)).map((a) => a.id)];
+  const armors: (string | undefined)[] = [undefined, ...ALL_ARMOR.filter((a) => owned.armor.includes(a.id)).map((a) => a.id)];
   const armor = getArmor(loadout.armor);
 
   const xpNeed = xpToNext(profile.level);

@@ -249,10 +249,49 @@ function buildWeapon(weaponId: string): THREE.Group {
   return g;
 }
 
+/** Pumpkin chest plate, corn-husk shoulder pads, and a trim of autumn leaves. */
+function buildHarvestArmor(g: THREE.Group): THREE.Group {
+  const pumpkin = mat(0xff8c42);
+  const ridge = mat(0xd9661a);
+  const chest = box(0.58, 0.58, 0.36, pumpkin);
+  chest.position.y = 1.18;
+  g.add(chest);
+  // Pumpkin ridges on the front and back.
+  for (const x of [-0.17, 0, 0.17]) {
+    for (const z of [0.185, -0.185]) {
+      const r = box(0.05, 0.54, 0.02, ridge);
+      r.position.set(x, 1.18, z);
+      g.add(r);
+    }
+  }
+  const stem = box(0.1, 0.1, 0.1, mat(0x4f7a28));
+  stem.position.set(0, 1.5, 0.12);
+  g.add(stem);
+  // Corn husk shoulder pads.
+  for (const side of [-1, 1]) {
+    for (let i = 0; i < 3; i++) {
+      const husk = box(0.1, 0.06, 0.3, mat(i === 1 ? 0xe9e27a : 0xb9cf5a));
+      husk.position.set(side * (0.3 + i * 0.07), 1.5 - i * 0.03, 0);
+      husk.rotation.z = side * -0.35;
+      g.add(husk);
+    }
+  }
+  // Autumn leaf trim around the waist.
+  const leafColors = [0xc0392b, 0xff8c42, 0xffd23f];
+  for (let i = 0; i < 5; i++) {
+    const leaf = box(0.1, 0.1, 0.04, mat(leafColors[i % 3]));
+    leaf.position.set(-0.24 + i * 0.12, 0.88, 0.19);
+    leaf.rotation.z = Math.PI / 4;
+    g.add(leaf);
+  }
+  return g;
+}
+
 function buildArmor(armorId: string | undefined): THREE.Group | null {
   const a = getArmor(armorId);
   if (!a) return null;
   const g = new THREE.Group();
+  if (a.id === 'armor-harvest') return buildHarvestArmor(g);
   const m = new THREE.MeshLambertMaterial({ color: a.color });
   const chest = box(0.56, 0.6, 0.34, m);
   chest.position.y = 1.18;

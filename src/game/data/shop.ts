@@ -7,6 +7,14 @@ export const ARMOR: Armor[] = [
   { id: 'armor-dragon', name: 'Dragon Scale', price: 900, hp: 50, slow: 0.05, color: 0x2ec27e },
 ];
 
+/** Holiday armor: given away during events, never sold. */
+export const EVENT_ARMOR: Armor[] = [
+  { id: 'armor-harvest', name: 'Harvest Armor', price: 0, hp: 10, slow: 0.03, color: 0xff8c42 },
+];
+
+/** Every armor a player can own (shop + holiday), in display order. */
+export const ALL_ARMOR: Armor[] = [...ARMOR, ...EVENT_ARMOR];
+
 /** Shop-only weapons. Not tiered, never offered as level-up prizes. */
 export const SHOP_WEAPONS: Record<string, Weapon> = {
   'shop-mace': { id: 'shop-mace', family: 'mace', tier: 'iron', name: 'Mace', damageMul: 1.3, swingTimeMul: 1.3, reach: 1.5, color: 0x9a9aa6, effect: 'dizzy' },
@@ -60,7 +68,7 @@ export const SHOP_ITEMS: ShopItem[] = [
 ].sort((a, b) => a.price - b.price);
 
 export function getArmor(id: string | undefined): Armor | undefined {
-  return id ? ARMOR.find((a) => a.id === id) : undefined;
+  return id ? ALL_ARMOR.find((a) => a.id === id) : undefined;
 }
 
 export function getShopItem(id: string): ShopItem | undefined {

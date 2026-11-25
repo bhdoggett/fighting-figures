@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CHRISTMAS_ITEMS, grantSeasonal, isChristmasMonth, isThanksgivingWindow, thanksgivingDate, THANKSGIVING_ITEMS } from './seasonal';
 import { newProfile, offerPrizes } from './progression';
-import { SHOP_ITEMS } from './data/shop';
+import { SHOP_ITEMS, getArmor } from './data/shop';
 import { getWeapon } from './data/weapons';
 import { getCosmetic } from './data/cosmetics';
 
@@ -28,6 +28,7 @@ describe('thanksgiving', () => {
     expect(granted.map((g) => g.id).sort()).toEqual([...THANKSGIVING_ITEMS].sort());
     expect(profile.owned.cosmetics).toEqual(expect.arrayContaining(['hat-pilgrim', 'cape-turkey']));
     expect(profile.owned.weapons).toContain('event-cornsword');
+    expect(profile.owned.armor).toContain('armor-harvest');
     expect(grantSeasonal(profile, d('2026-11-27')).granted).toEqual([]);
   });
 
@@ -82,5 +83,24 @@ describe('christmas', () => {
         expect(CHRISTMAS_ITEMS).not.toContain(prize.id);
       }
     }
+  });
+});
+
+describe('harvest armor', () => {
+  it('is a Thanksgiving gift like the Leather Vest, never in the shop', () => {
+    expect(THANKSGIVING_ITEMS).toContain('armor-harvest');
+    const a = getArmor('armor-harvest');
+    expect(a?.name).toBe('Harvest Armor');
+    expect(a?.hp).toBe(10);
+    expect(a?.slow).toBe(0.03);
+    expect(SHOP_ITEMS.map((i) => i.id)).not.toContain('armor-harvest');
+  });
+
+  it('players who already got the Thanksgiving gift still get the armor', () => {
+    const p = newProfile();
+    p.owned.cosmetics.push('hat-pilgrim', 'cape-turkey');
+    p.owned.weapons.push('event-cornsword');
+    const { granted } = grantSeasonal(p, d('2026-11-27'));
+    expect(granted.map((g) => g.id)).toEqual(['armor-harvest']);
   });
 });

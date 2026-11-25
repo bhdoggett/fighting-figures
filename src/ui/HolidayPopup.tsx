@@ -22,7 +22,7 @@ export function HolidayPopup({ gifts, onWear, onClose }: Props) {
               {getCosmetic(g.id) ? (
                 <PrizeIcon prize={{ kind: 'cosmetic', id: g.id, label: g.name, detail: '' }} />
               ) : (
-                <ItemIcon kind="weapon" id={g.id} />
+                <ItemIcon kind={g.id.startsWith('armor-') ? 'armor' : 'weapon'} id={g.id} />
               )}
               <span className={styles.name}>{g.name}</span>
             </div>

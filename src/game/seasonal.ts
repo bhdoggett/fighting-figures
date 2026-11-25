@@ -1,8 +1,9 @@
 import type { Profile } from './progression';
 import { getCosmetic } from './data/cosmetics';
 import { getWeapon } from './data/weapons';
+import { getArmor } from './data/shop';
 
-export const THANKSGIVING_ITEMS = ['hat-pilgrim', 'cape-turkey', 'event-cornsword'];
+export const THANKSGIVING_ITEMS = ['hat-pilgrim', 'cape-turkey', 'event-cornsword', 'armor-harvest'];
 const WINDOW_DAYS = 5;
 
 /** US Thanksgiving: the fourth Thursday of November (local date). */
@@ -54,19 +55,26 @@ export function grantSeasonal(p: Profile, now: Date): { profile: Profile; grante
   const granted: SeasonalGift[] = [];
   const cosmetics = [...p.owned.cosmetics];
   const weapons = [...p.owned.weapons];
+  const armor = [...p.owned.armor];
   for (const ev of EVENTS) {
     if (!ev.active(now)) continue;
     for (const id of ev.items) {
       const cosmetic = getCosmetic(id);
-      if (cosmetic && !cosmetics.includes(id)) {
+      const armorItem = getArmor(id);
+      if (cosmetic) {
+        if (cosmetics.includes(id)) continue;
         cosmetics.push(id);
         granted.push({ id, name: cosmetic.name, event: ev.greeting });
-      } else if (!cosmetic && !weapons.includes(id)) {
+      } else if (armorItem) {
+        if (armor.includes(id)) continue;
+        armor.push(id);
+        granted.push({ id, name: armorItem.name, event: ev.greeting });
+      } else if (!weapons.includes(id)) {
         weapons.push(id);
         granted.push({ id, name: getWeapon(id).name, event: ev.greeting });
       }
     }
   }
   if (granted.length === 0) return { profile: p, granted };
-  return { profile: { ...p, owned: { ...p.owned, cosmetics, weapons } }, granted };
+  return { profile: { ...p, owned: { ...p.owned, cosmetics, weapons, armor } }, granted };
 }
