@@ -170,7 +170,8 @@ export function PickScreen({ profile, onChange, onFight, onShop, touch, leftie, 
   }, []);
 
   const personality = getPersonality(loadout.personality);
-  const weapon = getWeapon(loadout.weapon);
+  const signature = personality.signatureWeapon;
+  const weapon = getWeapon(signature ?? loadout.weapon);
   const owned = profile.owned;
 
   const setLoadout = (patch: Partial<Profile['loadout']>) => onChange({ ...profile, loadout: { ...loadout, ...patch } });
@@ -251,8 +252,12 @@ export function PickScreen({ profile, onChange, onFight, onShop, touch, leftie, 
           <Cycler
             label="Weapon"
             value={weapon.name}
-            sub={`👍 ${FAMILY_TRADEOFFS[weapon.family].good} · 👎 ${FAMILY_TRADEOFFS[weapon.family].bad}`}
-            count={owned.weapons.length}
+            sub={
+              signature
+                ? `His own weapon! 👍 ${FAMILY_TRADEOFFS[weapon.family].good} · 👎 ${FAMILY_TRADEOFFS[weapon.family].bad}`
+                : `👍 ${FAMILY_TRADEOFFS[weapon.family].good} · 👎 ${FAMILY_TRADEOFFS[weapon.family].bad}`
+            }
+            count={signature ? 1 : owned.weapons.length}
             onPrev={() => setLoadout({ weapon: cycle(owned.weapons, loadout.weapon, -1) })}
             onNext={() => setLoadout({ weapon: cycle(owned.weapons, loadout.weapon, 1) })}
           />

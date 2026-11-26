@@ -48,7 +48,7 @@ export class PreviewRenderer {
       this.model.dispose();
     }
     this.model = new FighterModel(l);
-    this.fighter = createFighter('p1', getPersonality(l.personality), getWeapon(l.weapon), { x: 0, z: 0 });
+    this.fighter = createFighter('p1', getPersonality(l.personality), getWeapon(getPersonality(l.personality).signatureWeapon ?? l.weapon), { x: 0, z: 0 });
     this.fighter.invulnT = 0;
     this.scene.add(this.model.root);
   }

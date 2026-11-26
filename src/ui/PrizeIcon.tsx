@@ -66,6 +66,12 @@ function drawWeapon(px: Px, id: string) {
       px(8, 1, 7, 5, c);
       px(9, 2, 2, 1, '#ffffff');
       break;
+    case 'claws':
+      for (const x of [3, 7, 11]) {
+        for (let i = 0; i < 9; i++) px(x + Math.floor(i / 3), 2 + i, 1, 1, '#1d1b2f');
+      }
+      px(1, 12, 14, 2, '#c8ccd4');
+      break;
     case 'candycane':
       for (let i = 0; i < 10; i++) px(3 + i, 14 - i, 2, 2, i % 2 ? '#fffaf0' : '#e63946');
       px(12, 2, 2, 2, '#fffaf0');

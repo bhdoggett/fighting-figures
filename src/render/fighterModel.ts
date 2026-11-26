@@ -45,6 +45,21 @@ function faceTexture(personality: PersonalityId, skinColor = '#f2c79b'): THREE.C
   eye(1);
   eye(5);
   switch (personality) {
+    case 'robstruction':
+      // Gray face with angry slanted eyes, like the drawing.
+      g.fillStyle = '#8e8e96';
+      g.fillRect(0, 0, 8, 8);
+      px(1, 3, '#1d1b2f');
+      px(2, 3, '#1d1b2f');
+      px(5, 3, '#1d1b2f');
+      px(6, 3, '#1d1b2f');
+      px(1, 2, '#1d1b2f');
+      px(6, 2, '#1d1b2f');
+      px(2, 4, '#ffffff');
+      px(5, 4, '#ffffff');
+      px(3, 6, '#1d1b2f');
+      px(4, 6, '#1d1b2f');
+      break;
     case 'hothead':
       px(1, 2, '#5a2d0c');
       px(2, 2, '#5a2d0c');
@@ -209,6 +224,9 @@ function buildWeapon(weaponId: string): THREE.Group {
       });
       break;
     }
+    case 'claws':
+      // Robstruction's claws and knives are part of his body, nothing to hold.
+      break;
     case 'cornsword': {
       // A green cornstalk handle with a big corn cob for a blade.
       g.add(box(0.1, 0.32, 0.1, mat(0x55a630)));
@@ -446,36 +464,42 @@ export class FighterModel {
     const skinItem = getCosmetic(loadout.skin);
     const gingerbread = skinItem?.style === 'gingerbread';
     const skin = skinItem?.color ?? 0x3a86ff;
-    this.family = getWeapon(loadout.weapon).family;
+    const weaponId = personality.signatureWeapon ?? loadout.weapon;
+    this.family = getWeapon(weaponId).family;
+    // Robstruction is drawn all charcoal with long, thin limbs.
+    const robs = personality.id === 'robstruction';
+    const limb = robs ? 0.19 : 0.25;
 
-    const shirt = mat(skin);
-    const pants = mat(gingerbread ? skin : shade(skin, 0.55));
-    const skinTone = mat(gingerbread ? skin : personality.id === 'robot' ? 0xb8c4cc : 0xf2c79b);
+    const shirt = mat(robs ? 0x4a4a52 : skin);
+    const pants = mat(robs ? 0x4a4a52 : gingerbread ? skin : shade(skin, 0.55));
+    const skinTone = mat(robs ? 0x3d3d45 : gingerbread ? skin : personality.id === 'robot' ? 0xb8c4cc : 0xf2c79b);
     const accent = mat(personality.color);
     this.materials.push(shirt, pants, skinTone, accent);
 
     // Legs pivot at the hip (y = 0.75)
     for (const [leg, x] of [[this.legL, -0.13], [this.legR, 0.13]] as const) {
       leg.position.set(x, 0.75, 0);
-      const mesh = box(0.25, 0.75, 0.25, pants);
+      const mesh = box(limb, 0.75, limb, pants);
       mesh.position.y = -0.375;
       leg.add(mesh);
       this.body.add(leg);
     }
-    const torso = box(0.5, 0.75, 0.28, shirt);
+    const torso = box(robs ? 0.44 : 0.5, 0.75, robs ? 0.24 : 0.28, shirt);
     torso.position.y = 1.125;
     this.body.add(torso);
-    const belt = box(0.52, 0.1, 0.3, accent);
-    belt.position.y = 0.8;
-    this.body.add(belt);
+    if (!robs) {
+      const belt = box(0.52, 0.1, 0.3, accent);
+      belt.position.y = 0.8;
+      this.body.add(belt);
+    }
 
     // Arms pivot at the shoulder (y = 1.45)
     for (const [arm, x] of [[this.armL, -0.375], [this.armR, 0.375]] as const) {
       arm.position.set(x, 1.45, 0);
-      const sleeve = box(0.24, 0.4, 0.24, shirt);
+      const sleeve = box(robs ? 0.18 : 0.24, 0.4, robs ? 0.18 : 0.24, shirt);
       sleeve.position.y = -0.2;
       arm.add(sleeve);
-      const hand = box(0.22, 0.35, 0.22, skinTone);
+      const hand = box(robs ? 0.16 : 0.22, 0.35, robs ? 0.16 : 0.22, skinTone);
       hand.position.y = -0.55;
       arm.add(hand);
       this.body.add(arm);
@@ -484,6 +508,11 @@ export class FighterModel {
     // Head with a pixel face on the front (+z) side
     const faceMat = new THREE.MeshLambertMaterial({ map: faceTexture(personality.id, gingerbread ? '#b5651d' : undefined) });
     const headMats = [skinTone, skinTone, skinTone, skinTone, faceMat, skinTone];
+    if (robs) {
+      const hair = mat(0x1d1b2f);
+      headMats.splice(0, 4, hair, hair, hair, hair);
+      headMats[5] = hair;
+    }
     if (personality.id === 'ninja') {
       const wrap = mat(0x2b2d42);
       headMats.splice(0, 4, wrap, wrap, wrap, wrap);
@@ -493,6 +522,8 @@ export class FighterModel {
     this.head.castShadow = true;
     this.head.position.y = 1.75;
     this.body.add(this.head);
+
+    if (robs) this.buildRobstruction();
 
     if (gingerbread) {
       // White icing squiggles on wrists and ankles, plus gumdrop buttons.
@@ -571,13 +602,13 @@ export class FighterModel {
       this.body.add(this.cape);
     }
 
-    const weapon = buildWeapon(loadout.weapon);
+    const weapon = buildWeapon(weaponId);
     this.collectWeaponMaterials(weapon);
     weapon.position.set(0, -0.62, 0.05);
     weapon.rotation.x = Math.PI / 2;
     this.armR.add(weapon);
     if (this.family === 'daggers') {
-      const second = buildWeapon(loadout.weapon);
+      const second = buildWeapon(weaponId);
       this.collectWeaponMaterials(second);
       second.position.set(0, -0.62, 0.05);
       second.rotation.x = Math.PI / 2;
@@ -592,6 +623,67 @@ export class FighterModel {
     this.body.add(this.aura);
 
     this.root.add(this.body);
+  }
+
+  /** Robstruction's wild spiky hair, arm and leg knives, and claws (from his drawing). */
+  private buildRobstruction() {
+    const ink = mat(0x1d1b2f);
+    const blade = new THREE.MeshLambertMaterial({ color: 0xc8ccd4, emissive: 0x222228 });
+    const claw = mat(0x111114);
+
+    // Spiky hair framing the face like a mane.
+    const spikes = 16;
+    for (let i = 0; i < spikes; i++) {
+      const a = (i / spikes) * Math.PI * 2;
+      const spike = box(0.09, 0.26, 0.12, ink);
+      spike.position.set(Math.cos(a) * 0.3, Math.sin(a) * 0.3, 0.12);
+      spike.rotation.z = a - Math.PI / 2;
+      this.head.add(spike);
+    }
+    for (let i = 0; i < 6; i++) {
+      const back = box(0.1, 0.24, 0.1, ink);
+      back.position.set(-0.2 + i * 0.08, 0.28, -0.12 - (i % 2) * 0.06);
+      back.rotation.x = -0.5;
+      this.head.add(back);
+    }
+    const tuft = box(0.08, 0.16, 0.06, ink);
+    tuft.position.set(0, 0.2, 0.26);
+    this.head.add(tuft);
+
+    // Knives sticking out along the outside of each arm.
+    for (const [arm, side] of [[this.armL, -1], [this.armR, 1]] as const) {
+      // Fin-like blade angled away from the arm, as drawn.
+      const knife = box(0.05, 0.62, 0.12, blade);
+      knife.position.set(side * 0.19, -0.36, 0);
+      knife.rotation.z = side * 0.28;
+      arm.add(knife);
+      const tip = box(0.05, 0.14, 0.08, blade);
+      tip.position.set(side * 0.29, -0.04, 0);
+      tip.rotation.z = side * 0.55;
+      arm.add(tip);
+      // Long claws on the hand.
+      for (let f = 0; f < 4; f++) {
+        const c = box(0.035, 0.3, 0.035, claw);
+        c.position.set(-0.075 + f * 0.05, -0.84, 0.04);
+        c.rotation.x = 0.35;
+        c.rotation.z = (f - 1.5) * 0.22;
+        arm.add(c);
+      }
+      this.weaponMaterials.push(blade);
+    }
+
+    // Knives on the outside of each leg, and toe claws.
+    for (const [leg, side] of [[this.legL, -1], [this.legR, 1]] as const) {
+      const knife = box(0.05, 0.5, 0.12, blade);
+      knife.position.set(side * 0.17, -0.4, 0);
+      knife.rotation.z = side * 0.22;
+      leg.add(knife);
+      for (let t = 0; t < 3; t++) {
+        const c = box(0.035, 0.035, 0.18, claw);
+        c.position.set(-0.06 + t * 0.06, -0.73, 0.17);
+        leg.add(c);
+      }
+    }
   }
 
   /** drawPos: where to draw this frame (blended between game steps); defaults to the fighter's position. */
@@ -647,7 +739,7 @@ export class FighterModel {
         this.armR.rotation.x = -2.4 + ease(p) * 2.8;
         this.armR.rotation.z = -0.3;
         this.body.rotation.y = 0.4 - p * 0.8;
-        if (this.family === 'daggers') this.armL.rotation.x = -2.4 + ease(Math.max(0, p - 0.2)) * 2.8;
+        if (this.family === 'daggers' || this.family === 'claws') this.armL.rotation.x = -2.4 + ease(Math.max(0, p - 0.2)) * 2.8;
         break;
       }
       case 'dash': {

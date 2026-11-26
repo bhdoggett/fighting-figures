@@ -38,6 +38,7 @@ The camera stays locked on: you always face your opponent. No mouse needed.
 | Ninja | 5 | 2 | 3 | 15 s charge, 40% damage |
 | Tank | 1 | 3 | 6 | 54 s charge, instant KO |
 | Trickster | 4 | 3 | 3 | 24 s charge, 60% damage |
+| Robstruction (claws & arm knives, his own weapon) | 3 | 4 | 3 | 30 s charge, 65% damage |
 | Robo-Bonk (rank-up prize) | 2 | 4 | 4 | 30 s charge, 75% damage |
 | Grumpy Wizard (rank-up prize) | 2 | 5 | 3 | 42 s charge, instant KO |
 
