@@ -73,7 +73,9 @@ export const TUNING = {
   dashDur: 0.25,
   dashDistance: 6,
   dashDamage: 9,
-  dashCooldown: 1.2,
+  dashCooldown: 2.5,
+  /** Wobble after the lunge where you can't act, so a missed dash can be punished. */
+  dashStumble: 0.3,
   dodgeDur: 0.3,
   dodgeDistance: 3.5,
   dodgeCooldown: 0.8,
@@ -196,7 +198,7 @@ export function stepFighter(f: FighterState, intent: Intent, dt: number): Fighte
       const speed = TUNING.dodgeDistance / TUNING.dodgeDur;
       f.push = { x: dir.x * speed, z: dir.z * speed };
     } else if (canAttack && intent.dash && f.cooldowns.dash <= 0) {
-      startAction(f, 'dash', TUNING.dashDur);
+      startAction(f, 'dash', TUNING.dashDur + TUNING.dashStumble);
       f.cooldowns.dash = TUNING.dashCooldown;
       const fw = forward(f.facing);
       const speed = TUNING.dashDistance / TUNING.dashDur;
@@ -240,7 +242,7 @@ export function stepFighter(f: FighterState, intent: Intent, dt: number): Fighte
   // Busy: advance the action.
   f.actionT += dt;
   const pushActive =
-    f.action === 'dash' ||
+    (f.action === 'dash' && f.actionT < TUNING.dashDur) ||
     f.action === 'dodge' ||
     f.action === 'hitstun' ||
     (f.action === 'power' && f.actionT < f.actionDur * 0.4);
@@ -286,7 +288,7 @@ export function attackShape(f: FighterState): AttackShape | null {
       if (f.weapon.ranged) return null;
       return { range: reach + 0.5, arc: deg(60), windows: [[0.33, 0.66]], damage: () => TUNING.quickDamage * mul, duckable: true };
     case 'dash':
-      return { range: reach + 0.4, arc: deg(60), windows: [[0, 1]], damage: () => TUNING.dashDamage * mul, duckable: false };
+      return { range: reach + 0.4, arc: deg(60), windows: [[0, TUNING.dashDur / (TUNING.dashDur + TUNING.dashStumble)]], damage: () => TUNING.dashDamage * mul, duckable: false };
     case 'super': {
       const sd = f.personality.superDamage;
       return {

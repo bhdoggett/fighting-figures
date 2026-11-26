@@ -156,4 +156,20 @@ describe('fighter', () => {
     stepFighter(f, { ...emptyIntent(), duck: true, dodge: 'left' }, DT);
     expect(f.action).toBe('dodge');
   });
+
+  it('dash reloads in 2.5s and leaves you stumbling briefly after the lunge', () => {
+    const f = make('p1', 'hothead');
+    stepFighter(f, { ...emptyIntent(), dash: true }, DT);
+    expect(f.action).toBe('dash');
+    // Lunge (0.25s) then stumble: still busy shortly after the lunge ends.
+    for (let t = 0; t < 0.4; t += DT) stepFighter(f, emptyIntent(), DT);
+    stepFighter(f, { ...emptyIntent(), quick: true }, DT);
+    expect(f.action).not.toBe('quick');
+    for (let t = 0; t < 1.5; t += DT) stepFighter(f, emptyIntent(), DT);
+    stepFighter(f, { ...emptyIntent(), dash: true }, DT);
+    expect(f.action).not.toBe('dash');
+    for (let t = 0; t < 0.8; t += DT) stepFighter(f, emptyIntent(), DT);
+    stepFighter(f, { ...emptyIntent(), dash: true }, DT);
+    expect(f.action).toBe('dash');
+  });
 });

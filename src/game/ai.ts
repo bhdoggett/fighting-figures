@@ -44,7 +44,9 @@ export function botIntent(brain: BotBrain, self: FighterState, foe: FighterState
   }
   if (brain.reactIn >= 0) {
     brain.reactIn -= dt;
-    if (brain.reactIn < 0 && THREATS.has(foe.action) && rng() < 0.1 + 0.6 * difficulty) {
+    // Dashes are the easiest big attack to see coming, so bots dodge them a bit more.
+    const dodgeChance = 0.1 + 0.6 * difficulty + (foe.action === 'dash' ? 0.15 : 0);
+    if (brain.reactIn < 0 && THREATS.has(foe.action) && rng() < dodgeChance) {
       it.dodge = rng() < 0.5 ? 'left' : 'right';
       return it;
     }

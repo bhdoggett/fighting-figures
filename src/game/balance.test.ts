@@ -115,4 +115,36 @@ describe('balance', () => {
     };
     expect(play(true)).toBeLessThan(play(false));
   });
+
+  it('spamming dash does not beat a level-15 bot', () => {
+    let me = 0;
+    let bot = 0;
+    for (const per of ['hothead', 'tank', 'ninja', 'trickster'] as PersonalityId[]) {
+      for (const seed of [1, 2]) {
+        const rng = mulberry(seed);
+        const l1: Loadout = { personality: per, weapon: 'sword-wood', skin: 'skin-blue' };
+        const l2: Loadout = { personality: 'trickster', weapon: 'sword-wood', skin: 'skin-red' };
+        const m = createMatch(l1, l2, 180, rng);
+        const brain = createBotBrain();
+        let tick = 0;
+        while (!m.over) {
+          const [f1, f2] = m.fighters;
+          const dx = f2.pos.x - f1.pos.x;
+          const dz = f2.pos.z - f1.pos.z;
+          const len = Math.hypot(dx, dz) || 1;
+          const p: Intent = {
+            ...emptyIntent(),
+            move: len > 3 ? { x: dx / len, z: dz / len } : { x: (-dz / len) * 0.5, z: (dx / len) * 0.5 },
+            facing: Math.atan2(dx, dz),
+            dash: tick % 6 === 0,
+          };
+          stepMatch(m, [p, botIntent(brain, f2, f1, difficultyForLevel(15), rng, FIXED_DT)], FIXED_DT);
+          tick++;
+        }
+        me += m.kos[0];
+        bot += m.kos[1];
+      }
+    }
+    expect(me).toBeLessThanOrEqual(bot * 1.1);
+  });
 });

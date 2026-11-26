@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { FighterState } from '../game/fighter';
+import { TUNING, type FighterState } from '../game/fighter';
 import type { Loadout, PersonalityId } from '../game/types';
 import { getPersonality } from '../game/data/personalities';
 import { getWeapon } from '../game/data/weapons';
@@ -743,11 +743,20 @@ export class FighterModel {
         break;
       }
       case 'dash': {
-        this.body.rotation.x = 0.35;
-        this.armR.rotation.x = -1.6;
-        this.armL.rotation.x = 0.6;
-        this.legL.rotation.x = 0.7;
-        this.legR.rotation.x = -0.7;
+        if (f.actionT < TUNING.dashDur) {
+          this.body.rotation.x = 0.35;
+          this.armR.rotation.x = -1.6;
+          this.armL.rotation.x = 0.6;
+          this.legL.rotation.x = 0.7;
+          this.legR.rotation.x = -0.7;
+        } else {
+          // Stumble: arms flail as they catch their balance.
+          const k = (f.actionT - TUNING.dashDur) / TUNING.dashStumble;
+          this.body.rotation.x = 0.35 * (1 - k);
+          this.body.rotation.z = Math.sin(k * Math.PI * 3) * 0.15;
+          this.armL.rotation.z = -1.1;
+          this.armR.rotation.z = 1.1;
+        }
         break;
       }
       case 'power': {
