@@ -18,6 +18,8 @@ export interface Profile {
   coins: number;
   /** True once a pre-shop save has been paid coins for the levels it already had. */
   coinsBackPaid: boolean;
+  /** Scrambled codes already used on this save. */
+  redeemedCodes: string[];
   owned: { weapons: string[]; cosmetics: string[]; personalities: PersonalityId[]; armor: string[] };
   loadout: Loadout;
 }
@@ -49,6 +51,7 @@ export function newProfile(): Profile {
     pendingPrizes: [],
     coins: 0,
     coinsBackPaid: true,
+    redeemedCodes: [],
     owned: {
       weapons: ['sword-wood'],
       cosmetics: ['skin-blue'],

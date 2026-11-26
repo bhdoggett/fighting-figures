@@ -41,14 +41,12 @@ describe('Robstruction', () => {
     expect(m.fighters[1].weapon.id).toBe('sword-wood');
   });
 
-  it('is unlocked for everyone, including old saves', () => {
-    expect(STARTER_PERSONALITIES).toContain('robstruction');
-    expect(newProfile().owned.personalities).toContain('robstruction');
+  it('is locked until you enter his code', () => {
+    expect(STARTER_PERSONALITIES).not.toContain('robstruction');
+    expect(newProfile().owned.personalities).not.toContain('robstruction');
     const s = new MemStorage();
-    const p = newProfile();
-    p.owned.personalities = ['hothead', 'ninja'];
-    saveProfile(s, p);
-    expect(loadProfile(s).owned.personalities).toContain('robstruction');
+    saveProfile(s, newProfile());
+    expect(loadProfile(s).owned.personalities).not.toContain('robstruction');
     void SAVE_KEY;
   });
 

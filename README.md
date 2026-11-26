@@ -38,7 +38,7 @@ The camera stays locked on: you always face your opponent. No mouse needed.
 | Ninja | 5 | 2 | 3 | 15 s charge, 40% damage |
 | Tank | 1 | 3 | 6 | 54 s charge, instant KO |
 | Trickster | 4 | 3 | 3 | 24 s charge, 60% damage |
-| Robstruction (claws & arm knives, his own weapon) | 3 | 4 | 3 | 30 s charge, 65% damage |
+| Robstruction (secret code; claws & arm knives, his own weapon) | 3 | 4 | 3 | 30 s charge, 65% damage |
 | Robo-Bonk (rank-up prize) | 2 | 4 | 4 | 30 s charge, 75% damage |
 | Grumpy Wizard (rank-up prize) | 2 | 5 | 3 | 42 s charge, instant KO |
 
@@ -61,6 +61,10 @@ Every level-up earns **Figure Coins** (40 each), with a 300-coin bonus at level 
 Bots wear armor from level 8 and sometimes bring shop weapons from level 16, so fights stay fair.
 
 When running `npm run dev`, the shop has a **+1000 coins (dev only)** button for testing. It isn't in the real build.
+
+## Secret codes
+
+The **Shop** has a "Have a secret code?" box. Codes unlock characters or bundles, once per save, and ignore capitals and spaces. Codes are stored scrambled in `src/game/codes.ts`; to add one, run `scrambleCode('yourcode')` and add its result with the bundle it gives. (This keeps codes out of plain sight, but isn't real security.)
 
 ## Holiday gifts
 

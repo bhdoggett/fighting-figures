@@ -32,6 +32,7 @@ export function parseProfile(raw: unknown): Profile | null {
     wins: typeof r.wins === 'number' ? r.wins : 0,
     coins: typeof r.coins === 'number' && r.coins >= 0 ? Math.floor(r.coins) : 0,
     coinsBackPaid: true,
+    redeemedCodes: Array.isArray(r.redeemedCodes) ? r.redeemedCodes.filter((c): c is string => typeof c === 'string') : [],
     pendingPrizes: Array.isArray(r.pendingPrizes)
       ? r.pendingPrizes.filter((n): n is number => typeof n === 'number' && n >= 2 && n <= 30).slice(0, 30)
       : [],

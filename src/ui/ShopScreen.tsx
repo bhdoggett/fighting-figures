@@ -3,6 +3,7 @@ import type { Profile } from '../game/progression';
 import { buyItem } from '../game/progression';
 import { SHOP_ITEMS, type ShopItem } from '../game/data/shop';
 import { ItemIcon } from './PrizeIcon';
+import { redeemCode } from '../game/codes';
 import shared from './shared.module.css';
 import styles from './ShopScreen.module.css';
 
@@ -25,6 +26,20 @@ function equipped(p: Profile, item: ShopItem): boolean {
 export function ShopScreen({ profile, onChange, onBack }: Props) {
   const [tab, setTab] = useState<Tab>('armor');
   const [msg, setMsg] = useState('');
+  const [code, setCode] = useState('');
+  const [codeMsg, setCodeMsg] = useState<{ text: string; good: boolean } | null>(null);
+
+  const tryCode = () => {
+    const r = redeemCode(profile, code);
+    if (r.ok) {
+      onChange(r.profile);
+      setCode('');
+      const who = r.bundle.personalities?.length ? ' Ready to fight on the main screen!' : '';
+      setCodeMsg({ text: `Unlocked: ${r.bundle.name}!${who}`, good: true });
+    } else {
+      setCodeMsg({ text: r.reason === 'used' ? 'You already used that code!' : "Hmm, that code doesn't work. Check the spelling!", good: false });
+    }
+  };
   const items = SHOP_ITEMS.filter((i) => i.kind === tab);
 
   const buy = (item: ShopItem) => {
@@ -55,6 +70,32 @@ export function ShopScreen({ profile, onChange, onBack }: Props) {
         </header>
 
         <p className={styles.tip}>Earn coins by leveling up — big bonus at level 10 and level 20! Every item has a catch, so pick what fits how you fight.</p>
+
+        <form
+          className={styles.codeBox}
+          onSubmit={(e) => {
+            e.preventDefault();
+            tryCode();
+          }}
+        >
+          <label className={styles.codeLabel} htmlFor="secret-code">
+            Have a secret code?
+          </label>
+          <input
+            id="secret-code"
+            className={styles.codeInput}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="Type it here"
+            autoComplete="off"
+            autoCapitalize="off"
+            spellCheck={false}
+          />
+          <button className={shared.small} type="submit" disabled={!code.trim()}>
+            Unlock
+          </button>
+          {codeMsg && <span className={codeMsg.good ? styles.codeGood : styles.codeBad}>{codeMsg.text}</span>}
+        </form>
 
         <div className={styles.tabs}>
           <button className={tab === 'armor' ? styles.tabOn : styles.tab} onClick={() => setTab('armor')}>

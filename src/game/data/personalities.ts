@@ -137,7 +137,7 @@ export const PERSONALITIES: Record<PersonalityId, Personality> = {
   },
 };
 
-export const STARTER_PERSONALITIES: PersonalityId[] = ['hothead', 'ninja', 'tank', 'trickster', 'robstruction'];
+export const STARTER_PERSONALITIES: PersonalityId[] = ['hothead', 'ninja', 'tank', 'trickster'];
 export const LOCKED_PERSONALITIES: PersonalityId[] = ['robot', 'wizard'];
 
 export function getPersonality(id: PersonalityId): Personality {

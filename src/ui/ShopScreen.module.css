@@ -145,3 +145,43 @@
   .name { font-size: var(--text-md); }
   .good, .bad { font-size: 12px; }
 }
+
+.codeBox {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  background: var(--color-paper);
+  border: 3px dashed var(--color-purple);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+}
+
+.codeLabel {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  color: var(--color-purple);
+}
+
+.codeInput {
+  font: inherit;
+  font-weight: 800;
+  border: 3px solid var(--color-ink);
+  border-radius: 4px;
+  padding: var(--space-1) var(--space-2);
+  min-width: 180px;
+  user-select: text;
+}
+
+.codeGood,
+.codeBad {
+  font-weight: 800;
+}
+
+.codeGood {
+  color: var(--color-green);
+}
+
+.codeBad {
+  color: var(--color-red);
+}
