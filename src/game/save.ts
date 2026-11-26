@@ -1,5 +1,5 @@
 import { coinsForLevels, newProfile, type Profile } from './progression';
-import { PERSONALITIES } from './data/personalities';
+import { PERSONALITIES, STARTER_PERSONALITIES } from './data/personalities';
 
 export const SAVE_KEY = 'fighting-figures.save';
 
@@ -21,6 +21,8 @@ export function parseProfile(raw: unknown): Profile | null {
 
   const base = newProfile();
   const personalities = owned.personalities.filter((id) => id in PERSONALITIES) as Profile['owned']['personalities'];
+  // Fighters added later as starters are unlocked for existing saves too.
+  if (personalities.length) for (const id of STARTER_PERSONALITIES) if (!personalities.includes(id)) personalities.push(id);
   const p: Profile = {
     version: 1,
     level: Math.max(1, Math.min(30, Math.floor(r.level))),

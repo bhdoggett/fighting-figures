@@ -1,6 +1,6 @@
-export type PersonalityId = 'hothead' | 'ninja' | 'tank' | 'trickster' | 'robot' | 'wizard';
+export type PersonalityId = 'hothead' | 'ninja' | 'tank' | 'trickster' | 'robot' | 'wizard' | 'robstruction';
 
-export type PowerMoveKind = 'firePunch' | 'teleportSlash' | 'groundPound' | 'doubleHit' | 'laserSpin' | 'zapBolt';
+export type PowerMoveKind = 'firePunch' | 'teleportSlash' | 'groundPound' | 'doubleHit' | 'laserSpin' | 'zapBolt' | 'clawFlurry';
 
 export interface Personality {
   id: PersonalityId;
@@ -13,6 +13,8 @@ export interface Personality {
   /** 'ko' = instant KO on hit, number = fraction of target max health */
   superDamage: 'ko' | number;
   powerMove: PowerMoveKind;
+  /** Built-in weapon this fighter always uses, ignoring the weapon picker. */
+  signatureWeapon?: string;
   powerMoveName: string;
   lines: { taunt: string[]; hit: string[]; ko: string[]; win: string[] };
   color: number;
@@ -21,7 +23,9 @@ export interface Personality {
 export type BasicFamily = 'sword' | 'hammer' | 'daggers' | 'spear';
 export type ShopFamily = 'mace' | 'darts' | 'flamesword' | 'frosthammer' | 'thunderspear';
 export type EventFamily = 'cornsword' | 'candycane';
-export type WeaponFamily = BasicFamily | ShopFamily | EventFamily;
+/** A fighter's own built-in weapon (e.g. Robstruction's claws). */
+export type SignatureFamily = 'claws';
+export type WeaponFamily = BasicFamily | ShopFamily | EventFamily | SignatureFamily;
 
 /** Extra thing a shop weapon's hits do. */
 export type WeaponEffect = 'burn' | 'poison' | 'slow' | 'zap' | 'dizzy';

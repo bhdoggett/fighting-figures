@@ -316,6 +316,14 @@ export function attackShape(f: FighterState): AttackShape | null {
           };
         case 'laserSpin':
           return { range: reach + 1.0, arc: Math.PI, windows: [[0.3, 0.75]], damage: () => base, duckable: false };
+        case 'clawFlurry':
+          return {
+            range: reach + 0.6,
+            arc: deg(70),
+            windows: [[0.1, 0.25], [0.4, 0.55], [0.7, 0.85]],
+            damage: () => base * 0.45,
+            duckable: false,
+          };
         case 'zapBolt':
           return { range: 7, arc: deg(15), windows: [[0.45, 0.6]], damage: () => base, duckable: false };
       }

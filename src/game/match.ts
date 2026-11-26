@@ -62,8 +62,11 @@ export interface MatchState {
 }
 
 export function createMatch(p1: Loadout, p2: Loadout, duration = 180, rng: () => number = Math.random): MatchState {
-  const f1 = createFighter('p1', getPersonality(p1.personality), getWeapon(p1.weapon), SPAWNS[0], getArmor(p1.armor));
-  const f2 = createFighter('p2', getPersonality(p2.personality), getWeapon(p2.weapon), SPAWNS[1], getArmor(p2.armor));
+  const per1 = getPersonality(p1.personality);
+  const per2 = getPersonality(p2.personality);
+  // Fighters with their own built-in weapon (Robstruction's claws) always use it.
+  const f1 = createFighter('p1', per1, getWeapon(per1.signatureWeapon ?? p1.weapon), SPAWNS[0], getArmor(p1.armor));
+  const f2 = createFighter('p2', per2, getWeapon(per2.signatureWeapon ?? p2.weapon), SPAWNS[1], getArmor(p2.armor));
   return {
     time: duration,
     duration,

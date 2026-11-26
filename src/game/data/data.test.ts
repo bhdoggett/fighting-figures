@@ -27,7 +27,7 @@ describe('personalities', () => {
   });
 
   it('starters are the four presets', () => {
-    expect([...STARTER_PERSONALITIES].sort()).toEqual(['hothead', 'ninja', 'tank', 'trickster']);
+    expect([...STARTER_PERSONALITIES].sort()).toEqual(['hothead', 'ninja', 'robstruction', 'tank', 'trickster']);
   });
 
   it('never use banned words in lines or names', () => {

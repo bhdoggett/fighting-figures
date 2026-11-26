@@ -45,6 +45,7 @@ export const FAMILY_TRADEOFFS: Record<WeaponFamily, { good: string; bad: string 
   thunderspear: { good: 'Long reach, every 3rd hit zaps', bad: 'Pricey!' },
   cornsword: { good: 'Balanced (and very festive)', bad: 'Nothing special' },
   candycane: { good: 'Balanced (and very sweet)', bad: 'Nothing special' },
+  claws: { good: 'Super fast, both hands slash', bad: 'Short reach' },
 };
 
 function build(): Record<string, Weapon> {
@@ -71,7 +72,7 @@ function build(): Record<string, Weapon> {
 export const WEAPONS: Record<string, Weapon> = build();
 
 export function getWeapon(id: string): Weapon {
-  return WEAPONS[id] ?? SHOP_WEAPONS[id] ?? EVENT_WEAPONS[id] ?? WEAPONS['sword-wood'];
+  return WEAPONS[id] ?? SHOP_WEAPONS[id] ?? EVENT_WEAPONS[id] ?? SIGNATURE_WEAPONS[id] ?? WEAPONS['sword-wood'];
 }
 
 /** Holiday weapons: given away during events, never prizes or shop items. */
@@ -83,3 +84,8 @@ export const EVENT_WEAPONS: Record<string, Weapon> = {
 export function tierIndex(tier: Tier): number {
   return TIERS.indexOf(tier);
 }
+
+/** Fighters' own built-in weapons. */
+export const SIGNATURE_WEAPONS: Record<string, Weapon> = {
+  'sig-claws': { id: 'sig-claws', family: 'claws', tier: 'iron', name: 'Claws & Arm Knives', damageMul: 0.85, swingTimeMul: 0.7, reach: 1.25, color: 0xc8ccd4 },
+};

@@ -115,9 +115,29 @@ export const PERSONALITIES: Record<PersonalityId, Personality> = {
     },
     color: 0x3a0ca3,
   },
+  robstruction: {
+    id: 'robstruction',
+    name: 'Robstruction',
+    blurb: 'Wild hair, sharp claws, knives on his arms.',
+    speed: 3,
+    power: 4,
+    health: 3,
+    superChargeSec: 30,
+    superDamage: 0.65,
+    powerMove: 'clawFlurry',
+    powerMoveName: 'Claw Flurry',
+    signatureWeapon: 'sig-claws',
+    lines: {
+      taunt: ['Robstruction is in your way!', 'Snikt snikt!', 'You shall not pass... me!'],
+      hit: ['Grrr!', 'My hair!', 'That only makes me wilder!'],
+      ko: ['OBSTRUCTED!', 'Clawed it!', 'Roadblock!'],
+      win: ['Nobody gets past Robstruction!', 'Claws win again!'],
+    },
+    color: 0x4a4a52,
+  },
 };
 
-export const STARTER_PERSONALITIES: PersonalityId[] = ['hothead', 'ninja', 'tank', 'trickster'];
+export const STARTER_PERSONALITIES: PersonalityId[] = ['hothead', 'ninja', 'tank', 'trickster', 'robstruction'];
 export const LOCKED_PERSONALITIES: PersonalityId[] = ['robot', 'wizard'];
 
 export function getPersonality(id: PersonalityId): Personality {
